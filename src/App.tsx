@@ -61,7 +61,7 @@ function App() {
     if (sections.length > 30) {
       const minutes = estimateExportMinutes(sections.length);
       const proceed = window.confirm(
-        `Exporting ${sections.length} styled pages usually takes about ${minutes} minutes (optimized for large books). The PDF will match your preview. Keep this tab open. Continue?`
+        `Exporting ${sections.length} pages in high quality usually takes about ${minutes} minutes. The PDF will match your preview with sharp text and images. Keep this tab open. Continue?`
       );
       if (!proceed) return;
     }

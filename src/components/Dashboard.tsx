@@ -400,7 +400,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
 
               <div className="celestial-studio-panel space-y-3">
                 <p className="celestial-studio-sub leading-normal">
-                  Download a PDF that matches your preview — same theme, images, and layout on every page.
+                  Download a high-quality PDF matching your preview — sharp text, theme, images, and layout.
                 </p>
                 <button
                   type="button"

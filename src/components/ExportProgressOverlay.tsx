@@ -22,7 +22,7 @@ export const ExportProgressOverlay: React.FC<ExportProgressOverlayProps> = ({
       <div className="p-6 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center gap-4 max-w-sm w-full text-center">
         <Sparkles size={36} className="text-indigo-400 animate-spin" />
         <div>
-          <h3 className="text-base font-semibold text-slate-100">Building your styled PDF</h3>
+          <h3 className="text-base font-semibold text-slate-100">Building high-quality PDF</h3>
           {isPreparing ? (
             <p className="text-sm text-slate-300 mt-2">{statusMessage}</p>
           ) : (
@@ -45,7 +45,7 @@ export const ExportProgressOverlay: React.FC<ExportProgressOverlayProps> = ({
         <p className="text-[11px] text-slate-500 leading-relaxed">
           {isPreparing
             ? 'Getting images ready so each page matches your preview.'
-            : 'Capturing your exact theme and layout. Keep this tab open until 100%.'}
+            : 'High-resolution capture — keep this tab open until 100%.'}
         </p>
         {onCancel && (
           <button

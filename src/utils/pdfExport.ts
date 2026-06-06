@@ -14,29 +14,38 @@ import {
 /** Threshold above which preview renders one page at a time (avoids browser freeze). */
 export const LARGE_BOOK_PAGE_THRESHOLD = 15;
 
+/** A4 page width in CSS pixels — must match .ebook-page max-width. */
+const PAGE_CSS_WIDTH = 595;
+const PAGE_CSS_HEIGHT = 842;
+
 interface CaptureSettings {
   scale: number;
-  quality: number;
+  jpegQuality: number;
+  imageFormat: 'JPEG' | 'PNG';
   imageWaitMs: number;
   pageTimeoutMs: number;
   yieldMs: number;
 }
 
+/** High-quality capture — same settings for all book sizes (no quality downgrade). */
 function getCaptureSettings(totalPages: number): CaptureSettings {
-  if (totalPages > 100) {
-    return { scale: 0.72, quality: 0.76, imageWaitMs: 300, pageTimeoutMs: 22_000, yieldMs: 2 };
-  }
-  if (totalPages > 30) {
-    return { scale: 0.8, quality: 0.8, imageWaitMs: 500, pageTimeoutMs: 28_000, yieldMs: 4 };
-  }
-  return { scale: 1, quality: 0.85, imageWaitMs: 1200, pageTimeoutMs: 40_000, yieldMs: 12 };
+  // PNG is sharper but huge for 100+ pages; use lossless PNG only for smaller books.
+  const usePng = totalPages <= 40;
+  return {
+    scale: 2,
+    jpegQuality: 0.96,
+    imageFormat: usePng ? 'PNG' : 'JPEG',
+    imageWaitMs: 3000,
+    pageTimeoutMs: 90_000,
+    yieldMs: 120,
+  };
 }
 
-/** Rough export ETA shown in the confirm dialog. */
+/** Rough export ETA — quality mode is slower but readable. */
 export function estimateExportMinutes(totalPages: number): number {
-  if (totalPages > 100) return Math.max(5, Math.round(totalPages * 0.045));
-  if (totalPages > 30) return Math.max(3, Math.round(totalPages * 0.07));
-  return Math.max(1, Math.round(totalPages * 0.15));
+  if (totalPages > 100) return Math.max(10, Math.round(totalPages * 0.16));
+  if (totalPages > 30) return Math.max(5, Math.round(totalPages * 0.2));
+  return Math.max(2, Math.round(totalPages * 0.35));
 }
 
 /** Make the export container paintable — must stay in the viewport (no off-screen transform). */
@@ -52,7 +61,7 @@ export function prepareElementForPdfCapture(element: HTMLElement): () => void {
       'position:fixed',
       'left:0',
       'top:0',
-      'width:595px',
+      `width:${PAGE_CSS_WIDTH}px`,
       'z-index:9000',
       'pointer-events:none',
       'overflow:visible',
@@ -65,7 +74,7 @@ export function prepareElementForPdfCapture(element: HTMLElement): () => void {
     'display:flex',
     'flex-direction:column',
     'align-items:center',
-    'width:595px',
+    `width:${PAGE_CSS_WIDTH}px`,
     'background:#fff',
   ].join(';');
 
@@ -102,7 +111,7 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
 /** Poll until the export page is mounted and laid out with real dimensions. */
 export async function waitForPageElement(
   getPageElement: () => HTMLElement | null,
-  timeoutMs = 6000
+  timeoutMs = 8000
 ): Promise<HTMLElement> {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
@@ -116,7 +125,7 @@ export async function waitForPageElement(
 }
 
 /** Wait until images inside the export root have loaded (or time out). */
-export function waitForExportImages(root: HTMLElement, timeoutMs = 500): Promise<void> {
+export function waitForExportImages(root: HTMLElement, timeoutMs = 3000): Promise<void> {
   const images = Array.from(root.querySelectorAll('img'));
   const pending = images.filter((img) => !img.complete || img.naturalWidth === 0);
   if (pending.length === 0) return Promise.resolve();
@@ -151,13 +160,13 @@ function loadImageElement(url: string): Promise<HTMLImageElement> {
   });
 }
 
-/** Downscale and embed as JPEG data URL — instant paint during html2canvas. */
-async function toExportDataUrl(url: string, maxWidth = 520): Promise<string> {
+/** Embed full-resolution images as data URLs for sharp, instant paint during capture. */
+async function toExportDataUrl(url: string, maxEdge = 800): Promise<string> {
   if (url.startsWith('data:')) return url;
 
   try {
     const img = await loadImageElement(url);
-    const scale = Math.min(maxWidth / img.naturalWidth, maxWidth / img.naturalHeight, 1);
+    const scale = Math.min(maxEdge / img.naturalWidth, maxEdge / img.naturalHeight, 1);
     const w = Math.max(1, Math.round(img.naturalWidth * scale));
     const h = Math.max(1, Math.round(img.naturalHeight * scale));
     const canvas = document.createElement('canvas');
@@ -165,8 +174,10 @@ async function toExportDataUrl(url: string, maxWidth = 520): Promise<string> {
     canvas.height = h;
     const ctx = canvas.getContext('2d');
     if (!ctx) return url;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
     ctx.drawImage(img, 0, 0, w, h);
-    return canvas.toDataURL('image/jpeg', 0.78);
+    return canvas.toDataURL('image/png');
   } catch {
     return getPlaceholderImageUrl('image', 0);
   }
@@ -213,23 +224,23 @@ export async function preloadExportImages(
 ): Promise<void> {
   clearExportImageCache();
   const slots = collectExportImageSlots(sections, bookTitle, themeId);
-  const batchSize = 32;
+  const batchSize = 20;
   let loaded = 0;
 
   for (let i = 0; i < slots.length; i += batchSize) {
     await Promise.all(
       slots.slice(i, i + batchSize).map(async ({ prompt, seed }) => {
         const sourceUrl = getExportSafeImageUrl(prompt, seed);
-        const compactUrl = sourceUrl.includes('picsum.photos')
-          ? getStockFallbackUrl(prompt, seed, 520, 390)
+        const fullResUrl = sourceUrl.includes('picsum.photos')
+          ? getStockFallbackUrl(prompt, seed, 800, 600)
           : sourceUrl;
-        const dataUrl = await toExportDataUrl(compactUrl);
+        const dataUrl = await toExportDataUrl(fullResUrl, 800);
         cacheExportImageDataUrl(prompt, seed, dataUrl);
         loaded++;
         onPreloadProgress?.(loaded, slots.length);
       })
     );
-    await yieldToBrowser(0);
+    await yieldToBrowser(4);
   }
 }
 
@@ -246,7 +257,13 @@ function triggerPdfDownload(doc: jsPDF, filename: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
-function canvasToJpegDataUrl(canvas: HTMLCanvasElement, quality: number): Promise<string> {
+function canvasToDataUrl(
+  canvas: HTMLCanvasElement,
+  format: 'JPEG' | 'PNG',
+  jpegQuality: number
+): Promise<string> {
+  const mime = format === 'PNG' ? 'image/png' : 'image/jpeg';
+
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
@@ -259,8 +276,8 @@ function canvasToJpegDataUrl(canvas: HTMLCanvasElement, quality: number): Promis
         reader.onerror = () => reject(new Error('Canvas read failed'));
         reader.readAsDataURL(blob);
       },
-      'image/jpeg',
-      quality
+      mime,
+      format === 'JPEG' ? jpegQuality : undefined
     );
   });
 }
@@ -278,7 +295,7 @@ async function capturePageElement(
   pageEl: HTMLElement,
   pageNum: number,
   settings: CaptureSettings
-): Promise<string> {
+): Promise<{ dataUrl: string; format: 'JPEG' | 'PNG' }> {
   const canvas = await withTimeout(
     html2canvas(pageEl, {
       scale: settings.scale,
@@ -286,30 +303,35 @@ async function capturePageElement(
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: pageEl.offsetWidth,
-      height: pageEl.offsetHeight,
-      windowWidth: pageEl.offsetWidth,
-      windowHeight: pageEl.offsetHeight,
+      width: PAGE_CSS_WIDTH,
+      height: PAGE_CSS_HEIGHT,
+      windowWidth: PAGE_CSS_WIDTH,
+      windowHeight: PAGE_CSS_HEIGHT,
       scrollX: 0,
       scrollY: 0,
-      imageTimeout: 5000,
+      imageTimeout: 8000,
       onclone: (clonedDoc, clonedPage) => {
         clonedDoc.querySelectorAll('.no-print').forEach((node) => {
           (node as HTMLElement).style.display = 'none';
         });
-        (clonedPage as HTMLElement).style.boxShadow = 'none';
-        (clonedPage as HTMLElement).style.transform = 'none';
+        const page = clonedPage as HTMLElement;
+        page.style.boxShadow = 'none';
+        page.style.transform = 'none';
+        page.style.width = `${PAGE_CSS_WIDTH}px`;
+        page.style.minHeight = `${PAGE_CSS_HEIGHT}px`;
+        page.style.setProperty('-webkit-font-smoothing', 'antialiased');
       },
     }),
     settings.pageTimeoutMs,
     `Page ${pageNum} capture`
   );
 
-  if (canvas.width < 10 || canvas.height < 10) {
+  if (canvas.width < 100 || canvas.height < 100) {
     throw new Error(`Page ${pageNum} capture produced an empty canvas`);
   }
 
-  return canvasToJpegDataUrl(canvas, settings.quality);
+  const dataUrl = await canvasToDataUrl(canvas, settings.imageFormat, settings.jpegQuality);
+  return { dataUrl, format: settings.imageFormat };
 }
 
 /**
@@ -334,17 +356,17 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
 
     onProgress?.(i + 1, totalPages);
 
-    let imgData: string | null = null;
+    let pageCapture: { dataUrl: string; format: 'JPEG' | 'PNG' } | null = null;
 
     try {
       await onRenderPage(i);
       await waitForNextPaint();
       await waitForNextPaint();
-      await yieldToBrowser(Math.max(settings.yieldMs, 80));
+      await yieldToBrowser(settings.yieldMs);
 
       const pageEl = await waitForPageElement(getPageElement);
       await waitForExportImages(pageEl, settings.imageWaitMs);
-      imgData = await capturePageElement(pageEl, i + 1, settings);
+      pageCapture = await capturePageElement(pageEl, i + 1, settings);
     } catch (pageErr) {
       failedPages++;
       console.warn(`PDF export skipped page ${i + 1}:`, pageErr);
@@ -355,8 +377,8 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
     }
     isFirstPage = false;
 
-    if (imgData) {
-      doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
+    if (pageCapture) {
+      doc.addImage(pageCapture.dataUrl, pageCapture.format, 0, 0, 210, 297);
     } else {
       doc.setFontSize(14);
       doc.setTextColor(40, 40, 40);
@@ -366,8 +388,8 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
       doc.text('This page could not be rendered — re-export to retry.', 20, 42);
     }
 
-    if (i % 4 === 0) {
-      await yieldToBrowser(0);
+    if (i % 2 === 0) {
+      await yieldToBrowser(8);
     }
   }
 
