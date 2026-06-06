@@ -30,6 +30,7 @@ interface DashboardProps {
   onUpdateSection: (index: number, updated: EbookSection) => void;
   onDownloadPDF: () => void;
   isExporting: boolean;
+  exportProgress?: { current: number; total: number };
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -47,6 +48,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   onUpdateSection,
   onDownloadPDF,
   isExporting,
+  exportProgress,
 }) => {
   const [activeTab, setActiveTab] = useState<'style' | 'outline'>('style');
   const [selectedStyle, setSelectedStyle] = useState('Poetic & Artistic');
@@ -409,7 +411,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   {isExporting ? (
                     <>
                       <Sparkles size={14} className="animate-spin" />
-                      <span>Exporting E-Book...</span>
+                      <span>
+                        {exportProgress && exportProgress.total > 0
+                          ? `Exporting ${exportProgress.current}/${exportProgress.total}...`
+                          : 'Exporting E-Book...'}
+                      </span>
                     </>
                   ) : (
                     <>

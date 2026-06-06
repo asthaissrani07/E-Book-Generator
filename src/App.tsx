@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { flushSync } from 'react-dom';
 import { Dashboard } from './components/Dashboard';
 import { EbookViewer } from './components/EbookViewer';
 import { parsePdf } from './utils/pdfParser';
@@ -21,8 +22,7 @@ import { LandingPage } from './components/LandingPage';
 import type { ThemeId } from './themes/types';
 import {
   prepareElementForPdfCapture,
-  waitForExportImages,
-  waitForNextPaint,
+  exportEbookPageByPage,
 } from './utils/pdfExport';
 
 function App() {
@@ -41,6 +41,8 @@ function App() {
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('editorial');
   const [isStyling, setIsStyling] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
+  const [pdfExportPageIndex, setPdfExportPageIndex] = useState<number | null>(null);
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [isGeneratingImageMap, setIsGeneratingImageMap] = useState<{ [key: number]: boolean }>({});
   const [activeMobileView, setActiveMobileView] = useState<'controls' | 'preview'>('controls');
@@ -48,52 +50,50 @@ function App() {
 
 
   const handleDownloadPDF = async () => {
-    const html2pdf = (window as any).html2pdf;
-    if (!html2pdf) {
-      alert("PDF converter library is still loading. Please wait a moment and try again.");
+    if (sections.length === 0) {
+      alert('Import a PDF first before exporting.');
       return;
     }
 
-    setIsExporting(true);
+    const html2pdf = (window as any).html2pdf;
+    if (!html2pdf) {
+      alert('PDF converter library is still loading. Please wait a moment and try again.');
+      return;
+    }
 
     const element = document.getElementById('ebook-download-area') as HTMLElement | null;
     if (!element) {
       alert('Export area not found. Please reload the page and try again.');
-      setIsExporting(false);
       return;
     }
 
+    const filename = `${(bookTitle || 'ebook').toLowerCase().replace(/\s+/g, '_')}_ebook.pdf`;
+    setIsExporting(true);
+    setExportProgress({ current: 0, total: sections.length });
+
     const restoreCaptureStyles = prepareElementForPdfCapture(element);
 
-    const opt = {
-      margin: 0,
-      filename: `${(bookTitle || 'ebook').toLowerCase().replace(/\s+/g, '_')}_ebook.pdf`,
-      image: { type: 'jpeg', quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        allowTaint: false,
-        logging: false,
-        letterRendering: true,
-        width: 595,
-        windowWidth: 595,
-        scrollX: 0,
-        scrollY: 0,
-      },
-      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak: { mode: ['css', 'legacy'] },
-    };
-
     try {
-      await waitForNextPaint();
-      await waitForExportImages(element);
-      await html2pdf().from(element).set(opt).save();
+      await exportEbookPageByPage({
+        totalPages: sections.length,
+        filename,
+        onProgress: (current, total) => setExportProgress({ current, total }),
+        onRenderPage: (pageIndex) => {
+          flushSync(() => setPdfExportPageIndex(pageIndex));
+        },
+        getPageElement: () =>
+          element.querySelector('.ebook-page') as HTMLElement | null,
+      });
     } catch (err) {
       console.error('PDF generation failed: ', err);
-      alert("Could not export PDF automatically. Try using the 'Print PDF' option instead.");
+      alert(
+        'Could not export PDF. For very large books this may take several minutes — try again, or use Print PDF.'
+      );
     } finally {
+      flushSync(() => setPdfExportPageIndex(null));
       restoreCaptureStyles();
       setIsExporting(false);
+      setExportProgress({ current: 0, total: 0 });
     }
   };
 
@@ -371,6 +371,7 @@ function App() {
             onUpdateSection={handleUpdateSection}
             onDownloadPDF={handleDownloadPDF}
             isExporting={isExporting}
+            exportProgress={exportProgress}
           />
         </div>
 
@@ -387,6 +388,7 @@ function App() {
             isGeneratingImageMap={isGeneratingImageMap}
             onDownloadPDF={handleDownloadPDF}
             isExporting={isExporting}
+            exportProgress={exportProgress}
             onNavigateToDashboard={() => setActiveMobileView('controls')}
             activePageIndex={activePageIndex}
             onSelectPage={handleSelectPage}
@@ -423,11 +425,11 @@ function App() {
         aria-hidden
       >
         <div id="ebook-download-area" className={`theme-${selectedTheme} ebook-preview-container`}>
-          {sections.map((section, idx) => (
-            <div key={`download-${section.id}`} className="ebook-page-wrapper page-break">
+          {pdfExportPageIndex !== null && sections[pdfExportPageIndex] && (
+            <div className="ebook-page-wrapper page-break">
               <PageLayout
-                section={section}
-                pageIndex={idx + 1}
+                section={sections[pdfExportPageIndex]}
+                pageIndex={pdfExportPageIndex + 1}
                 totalPages={sections.length}
                 bookTitle={bookTitle}
                 selectedTheme={selectedTheme}
@@ -439,7 +441,7 @@ function App() {
                 pdfExportMode
               />
             </div>
-          ))}
+          )}
         </div>
       </div>
     </div>

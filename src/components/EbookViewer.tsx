@@ -2,7 +2,19 @@ import React, { useState } from 'react';
 import { PageLayout } from './PageLayout';
 import type { EbookSection } from '../utils/pdfParser';
 import type { ThemeId } from '../themes/types';
-import { FileText, Printer, Columns, Square, Plus, Sparkles, BookOpen, ArrowLeft } from 'lucide-react';
+import { LARGE_BOOK_PAGE_THRESHOLD } from '../utils/pdfExport';
+import {
+  FileText,
+  Printer,
+  Columns,
+  Square,
+  Plus,
+  Sparkles,
+  BookOpen,
+  ArrowLeft,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
 interface EbookViewerProps {
   sections: EbookSection[];
@@ -15,6 +27,7 @@ interface EbookViewerProps {
   isGeneratingImageMap: { [key: number]: boolean };
   onDownloadPDF: () => void;
   isExporting: boolean;
+  exportProgress: { current: number; total: number };
   onNavigateToDashboard: () => void;
   activePageIndex: number;
   onSelectPage: (idx: number) => void;
@@ -31,19 +44,56 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
   isGeneratingImageMap,
   onDownloadPDF,
   isExporting,
+  exportProgress,
   onNavigateToDashboard,
   activePageIndex,
   onSelectPage,
 }) => {
   const [viewMode, setViewMode] = useState<'single' | 'spread'>('single');
+  const isLargeBook = sections.length > LARGE_BOOK_PAGE_THRESHOLD;
+  const useCompactPreview = isLargeBook || viewMode === 'single';
 
-  // Trigger Browser Print Dialog
   const handlePrint = () => {
+    if (isLargeBook) {
+      const ok = window.confirm(
+        `This book has ${sections.length} pages. Browser print works best with smaller books. Use Download PDF for the full export. Print current view anyway?`
+      );
+      if (!ok) return;
+    }
     window.print();
   };
 
+  const goToPrev = () => {
+    if (activePageIndex > 0) onSelectPage(activePageIndex - 1);
+  };
+
+  const goToNext = () => {
+    if (activePageIndex < sections.length - 1) onSelectPage(activePageIndex + 1);
+  };
+
+  const renderPage = (section: EbookSection, idx: number) => (
+    <div
+      key={section.id}
+      className="ebook-page-wrapper page-break cursor-pointer"
+      onClick={() => onSelectPage(idx)}
+    >
+      <PageLayout
+        section={section}
+        pageIndex={idx + 1}
+        totalPages={sections.length}
+        bookTitle={bookTitle}
+        selectedTheme={selectedTheme}
+        onUpdateSection={(updated) => onUpdateSection(idx, updated)}
+        onDeleteSection={() => onDeleteSection(idx)}
+        onRegenerateImage={(customPrompt) => onRegenerateImage(idx, customPrompt)}
+        isGeneratingImage={isGeneratingImageMap[idx] || false}
+        isActive={idx === activePageIndex}
+      />
+    </div>
+  );
+
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full relative">
       {/* Viewer Header Menu */}
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 bg-slate-900 border-b border-slate-800 no-print">
         <div className="flex items-center gap-2 min-w-0">
@@ -55,7 +105,7 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
             <ArrowLeft size={14} />
             <span>Dashboard</span>
           </button>
-          
+
           <BookOpen className="text-indigo-400 hidden sm:inline shrink-0" size={18} />
           <span className="font-semibold text-slate-200 text-sm hidden sm:inline">E-Book Preview</span>
           <span className="text-xs bg-slate-800 text-slate-400 px-2.5 py-0.5 rounded-full border border-slate-700/60">
@@ -63,29 +113,29 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
           </span>
         </div>
 
-        {/* Action Controls */}
         <div className="flex items-center gap-2">
-          {/* View mode toggle */}
-          <div className="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 mr-2">
-            <button
-              onClick={() => setViewMode('single')}
-              className={`p-1.5 rounded-md transition ${
-                viewMode === 'single' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Single Page Scroll"
-            >
-              <Square size={14} />
-            </button>
-            <button
-              onClick={() => setViewMode('spread')}
-              className={`p-1.5 rounded-md transition hidden sm:inline-block ${
-                viewMode === 'spread' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
-              }`}
-              title="Two-Page Spread Layout"
-            >
-              <Columns size={14} />
-            </button>
-          </div>
+          {!isLargeBook && (
+            <div className="flex bg-slate-950 p-0.5 rounded-lg border border-slate-800 mr-2">
+              <button
+                onClick={() => setViewMode('single')}
+                className={`p-1.5 rounded-md transition ${
+                  viewMode === 'single' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Single Page Scroll"
+              >
+                <Square size={14} />
+              </button>
+              <button
+                onClick={() => setViewMode('spread')}
+                className={`p-1.5 rounded-md transition hidden sm:inline-block ${
+                  viewMode === 'spread' ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-slate-200'
+                }`}
+                title="Two-Page Spread Layout"
+              >
+                <Columns size={14} />
+              </button>
+            </div>
+          )}
 
           <button
             onClick={onAddSection}
@@ -114,7 +164,11 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
             {isExporting ? (
               <>
                 <Sparkles size={14} className="animate-spin" />
-                <span className="hidden sm:inline">Exporting...</span>
+                <span className="hidden sm:inline">
+                  {exportProgress.total > 0
+                    ? `Exporting ${exportProgress.current}/${exportProgress.total}...`
+                    : 'Exporting...'}
+                </span>
               </>
             ) : (
               <>
@@ -126,47 +180,58 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
         </div>
       </div>
 
-      {/* Interactive Ebook View Canvas with scroll container constraints */}
+      {isLargeBook && (
+        <div className="flex items-center justify-center gap-3 py-2.5 px-4 bg-slate-950/80 border-b border-slate-800 no-print">
+          <button
+            type="button"
+            onClick={goToPrev}
+            disabled={activePageIndex === 0}
+            className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition"
+            aria-label="Previous page"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-xs text-slate-400 font-medium tabular-nums">
+            Page {activePageIndex + 1} of {sections.length}
+          </span>
+          <button
+            type="button"
+            onClick={goToNext}
+            disabled={activePageIndex >= sections.length - 1}
+            className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white disabled:opacity-40 transition"
+            aria-label="Next page"
+          >
+            <ChevronRight size={18} />
+          </button>
+          <span className="text-[10px] text-slate-500 ml-1 hidden sm:inline">
+            Large book mode — one page at a time for speed
+          </span>
+        </div>
+      )}
+
       <div className="ebook-preview-scroll-container p-4 sm:p-8 flex justify-center items-start no-print">
         <div
           id="ebook-print-area"
           className={`print-container theme-${selectedTheme} ${
-            viewMode === 'spread'
+            !useCompactPreview && viewMode === 'spread'
               ? 'grid grid-cols-1 md:grid-cols-2 gap-6 max-w-[1240px]'
               : 'ebook-preview-container'
           }`}
         >
-          {sections.map((section, idx) => (
-            <div
-              key={section.id}
-              className="ebook-page-wrapper page-break cursor-pointer"
-              onClick={() => onSelectPage(idx)}
-            >
-              <PageLayout
-                section={section}
-                pageIndex={idx + 1}
-                totalPages={sections.length}
-                bookTitle={bookTitle}
-                selectedTheme={selectedTheme}
-                onUpdateSection={(updated) => onUpdateSection(idx, updated)}
-                onDeleteSection={() => onDeleteSection(idx)}
-                onRegenerateImage={(customPrompt) => onRegenerateImage(idx, customPrompt)}
-                isGeneratingImage={isGeneratingImageMap[idx] || false}
-                isActive={idx === activePageIndex}
-              />
-            </div>
-          ))}
+          {useCompactPreview
+            ? sections[activePageIndex] && renderPage(sections[activePageIndex], activePageIndex)
+            : sections.map((section, idx) => renderPage(section, idx))}
         </div>
       </div>
 
-      {/* Hidden print-only container mapped to system print styles */}
+      {/* Print area: active page only for large books */}
       <div className="hidden print-container print:block">
         <div id="ebook-print-area-native" className={`theme-${selectedTheme}`}>
-          {sections.map((section, idx) => (
+          {sections[activePageIndex] && (
             <PageLayout
-              key={`print-${section.id}`}
-              section={section}
-              pageIndex={idx + 1}
+              key={`print-${sections[activePageIndex].id}`}
+              section={sections[activePageIndex]}
+              pageIndex={activePageIndex + 1}
               totalPages={sections.length}
               bookTitle={bookTitle}
               selectedTheme={selectedTheme}
@@ -174,11 +239,34 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
               onDeleteSection={() => {}}
               onRegenerateImage={async () => {}}
               isGeneratingImage={false}
-              isActive={false}
+              isActive={true}
             />
-          ))}
+          )}
         </div>
       </div>
+
+      {isExporting && exportProgress.total > 0 && (
+        <div className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm z-50 flex flex-col items-center justify-center no-print">
+          <div className="p-5 bg-slate-900 rounded-2xl border border-slate-800 shadow-2xl flex flex-col items-center gap-3 max-w-xs text-center">
+            <Sparkles size={32} className="text-indigo-400 animate-spin" />
+            <div>
+              <h3 className="text-sm font-semibold text-slate-100">Building your PDF</h3>
+              <p className="text-xs text-slate-400 mt-1">
+                Page {exportProgress.current} of {exportProgress.total}
+              </p>
+              <p className="text-[10px] text-slate-500 mt-2">Please keep this tab open</p>
+            </div>
+            <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
+              <div
+                className="bg-indigo-600 h-full rounded-full transition-all duration-300"
+                style={{
+                  width: `${Math.round((exportProgress.current / exportProgress.total) * 100)}%`,
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
