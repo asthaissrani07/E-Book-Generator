@@ -1152,6 +1152,20 @@ button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
   margin-bottom: 0.75rem;
 }
 
+/* Off-screen PDF export area — must stay paintable for html2canvas */
+#ebook-download-area .ebook-page {
+  width: 595px !important;
+  max-width: 595px !important;
+  min-height: 842px !important;
+  background-color: var(--eb-bg) !important;
+  color: var(--eb-text) !important;
+  box-shadow: none !important;
+}
+
+#ebook-download-area .no-print {
+  display: none !important;
+}
+
 /* Page break formatting for pdf download and print */
 .page-break {
   page-break-after: always !important;

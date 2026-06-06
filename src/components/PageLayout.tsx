@@ -16,6 +16,8 @@ interface PageLayoutProps {
   onRegenerateImage: (customPrompt?: string) => Promise<void>;
   isGeneratingImage: boolean;
   isActive: boolean;
+  /** When true, load all images immediately for PDF export capture. */
+  pdfExportMode?: boolean;
 }
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
@@ -29,6 +31,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   onRegenerateImage,
   isGeneratingImage,
   isActive,
+  pdfExportMode = false,
 }) => {
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [promptText, setPromptText] = useState(section.imagePrompt);
@@ -214,7 +217,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             shouldShowImage={shouldShowImage}
             imageSlots={imageSlots}
             imageVersion={imageVersion}
-            isActive={isActive}
+            isActive={isActive || pdfExportMode}
+            pdfExportMode={pdfExportMode}
           />
         ) : section.layout === 'split' ? (
           // SPLIT LAYOUT TEMPLATE (Text Left, Image Right)
@@ -259,6 +263,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             shouldShowChapterHeading={shouldShowChapterHeading}
             chapterHeadingText={chapterHeadingText}
             onTextChange={handleTextChange}
+            pdfExportMode={pdfExportMode}
           />
         ) : section.layout === 'magazine' ? (
           // MAGAZINE LAYOUT TEMPLATE (Multi-columns + Top Header Graphic)

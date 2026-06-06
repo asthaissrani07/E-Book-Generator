@@ -19,6 +19,11 @@ import { Compass, Sparkles } from 'lucide-react';
 import { PageLayout } from './components/PageLayout';
 import { LandingPage } from './components/LandingPage';
 import type { ThemeId } from './themes/types';
+import {
+  prepareElementForPdfCapture,
+  waitForExportImages,
+  waitForNextPaint,
+} from './utils/pdfExport';
 
 function App() {
   const [appView, setAppView] = useState<'landing' | 'studio'>('landing');
@@ -50,28 +55,44 @@ function App() {
     }
 
     setIsExporting(true);
-    const element = document.getElementById('ebook-download-area');
-    
+
+    const element = document.getElementById('ebook-download-area') as HTMLElement | null;
+    if (!element) {
+      alert('Export area not found. Please reload the page and try again.');
+      setIsExporting(false);
+      return;
+    }
+
+    const restoreCaptureStyles = prepareElementForPdfCapture(element);
+
     const opt = {
-      margin:       0,
-      filename:     `${bookTitle.toLowerCase().replace(/\s+/g, '_')}_ebook.pdf`,
-      image:        { type: 'jpeg', quality: 0.98 },
-      html2canvas:  { 
-        scale: 2, 
+      margin: 0,
+      filename: `${(bookTitle || 'ebook').toLowerCase().replace(/\s+/g, '_')}_ebook.pdf`,
+      image: { type: 'jpeg', quality: 0.98 },
+      html2canvas: {
+        scale: 2,
         useCORS: true,
+        allowTaint: false,
         logging: false,
-        letterRendering: true
+        letterRendering: true,
+        width: 595,
+        windowWidth: 595,
+        scrollX: 0,
+        scrollY: 0,
       },
-      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-      pagebreak:    { mode: ['css', 'legacy'] }
+      jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+      pagebreak: { mode: ['css', 'legacy'] },
     };
 
     try {
+      await waitForNextPaint();
+      await waitForExportImages(element);
       await html2pdf().from(element).set(opt).save();
     } catch (err) {
-      console.error("PDF generation failed: ", err);
+      console.error('PDF generation failed: ', err);
       alert("Could not export PDF automatically. Try using the 'Print PDF' option instead.");
     } finally {
+      restoreCaptureStyles();
       setIsExporting(false);
     }
   };
@@ -395,7 +416,12 @@ function App() {
       </div>
 
       {/* Dedicated off-screen container for PDF download generation to prevent display:none failures on mobile */}
-      <div style={{ position: 'fixed', left: 0, top: 0, zIndex: -50, pointerEvents: 'none' }} className="no-print">
+      <div
+        id="ebook-download-wrapper"
+        style={{ position: 'fixed', left: 0, top: 0, zIndex: -1, pointerEvents: 'none', opacity: 0 }}
+        className="no-print"
+        aria-hidden
+      >
         <div id="ebook-download-area" className={`theme-${selectedTheme} ebook-preview-container`}>
           {sections.map((section, idx) => (
             <div key={`download-${section.id}`} className="ebook-page-wrapper page-break">
@@ -409,7 +435,8 @@ function App() {
                 onDeleteSection={() => {}}
                 onRegenerateImage={async () => {}}
                 isGeneratingImage={false}
-                isActive={false}
+                isActive={true}
+                pdfExportMode
               />
             </div>
           ))}

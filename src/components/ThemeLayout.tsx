@@ -17,6 +17,7 @@ interface ThemeLayoutProps {
   shouldShowChapterHeading: boolean;
   chapterHeadingText: string;
   onTextChange: (field: 'title' | 'content', val: string) => void;
+  pdfExportMode?: boolean;
 }
 
 function splitContent(content: string) {
@@ -33,15 +34,16 @@ const Img: React.FC<{
   className: string;
   imageVersion: number;
   isActive: boolean;
+  pdfExportMode?: boolean;
   id?: string;
-}> = ({ slot, alt, className, imageVersion, isActive, id }) => (
+}> = ({ slot, alt, className, imageVersion, isActive, pdfExportMode, id }) => (
   <ResolvedImage
     key={`${id || alt}-${imageVersion}-${slot.seed}`}
     prompt={slot.prompt}
     seed={slot.seed}
     alt={alt}
     className={className}
-    eager={isActive}
+    eager={isActive || pdfExportMode}
   />
 );
 
@@ -60,6 +62,7 @@ export const ThemeCover: React.FC<{
   imageSlots: EditorialImageSet;
   imageVersion: number;
   isActive: boolean;
+  pdfExportMode?: boolean;
 }> = ({
   themeId,
   section,
@@ -73,6 +76,7 @@ export const ThemeCover: React.FC<{
   imageSlots,
   imageVersion,
   isActive,
+  pdfExportMode,
 }) => {
   const title = section.title;
 
@@ -120,7 +124,7 @@ export const ThemeCover: React.FC<{
         <p className="wl-cover-sub">A Journey Through Travel</p>
         {shouldShowImage && (
           <div className="wl-cover-photo">
-            <Img slot={imageSlots.primary} alt="Travel cover" className="wl-cover-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt="Travel cover" className="wl-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
       </div>
@@ -133,7 +137,7 @@ export const ThemeCover: React.FC<{
         <div className="sp-cover-box">
           {shouldShowImage && (
             <div className="sp-cover-photo">
-              <Img slot={imageSlots.primary} alt="Pink cover" className="sp-cover-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={imageSlots.primary} alt="Pink cover" className="sp-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           )}
           <h1
@@ -159,7 +163,7 @@ export const ThemeCover: React.FC<{
         <div className="sporty-cover-main">
           {shouldShowImage && (
             <div className="sporty-cover-photo">
-              <Img slot={imageSlots.primary} alt="Sports cover" className="sporty-cover-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={imageSlots.primary} alt="Sports cover" className="sporty-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           )}
           <h1
@@ -190,7 +194,7 @@ export const ThemeCover: React.FC<{
         </div>
         {shouldShowImage && (
           <div className="construct-cover-photo">
-            <Img slot={imageSlots.primary} alt="Construct cover" className="construct-cover-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt="Construct cover" className="construct-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
       </div>
@@ -214,7 +218,7 @@ export const ThemeCover: React.FC<{
           <div className="nyt-cover-circles">
             {[imageSlots.primary, ...imageSlots.extras.slice(0, 2)].map((slot, i) => (
               <div key={i} className={`nyt-circle nyt-circle-${i}`}>
-                <Img slot={slot} alt={`Cover ${i}`} className="nyt-circle-img" imageVersion={imageVersion} isActive={isActive} />
+                <Img slot={slot} alt={`Cover ${i}`} className="nyt-circle-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               </div>
             ))}
           </div>
@@ -229,7 +233,7 @@ export const ThemeCover: React.FC<{
         <span className="wellness-cover-vertical">Emocalm</span>
         <div className="wellness-cover-main">
           {shouldShowImage && (
-            <Img slot={imageSlots.primary} alt="Wellness cover" className="wellness-cover-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt="Wellness cover" className="wellness-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           )}
           <h1
             contentEditable
@@ -284,6 +288,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
     shouldShowChapterHeading,
     chapterHeadingText,
     onTextChange,
+    pdfExportMode,
   } = props;
 
   const { lead, body } = splitContent(section.content);
@@ -325,7 +330,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
 
         {shouldShowImage && (
           <div className="comic-hero-panel">
-            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="comic-hero-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="comic-hero-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
 
@@ -356,7 +361,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="comic-panel-grid">
           {extras.slice(0, 4).map((slot, i) => (
             <div key={i} className={`comic-panel comic-panel-${i}`}>
-              <Img slot={slot} alt={`Panel ${i + 1}`} className="comic-panel-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={slot} alt={`Panel ${i + 1}`} className="comic-panel-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               <span className="comic-panel-cap">PANEL {i + 1}</span>
             </div>
           ))}
@@ -368,7 +373,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
 
         {extras[4] && shouldShowImage && (
           <div className="comic-footer-strip">
-            <Img slot={extras[4]} alt="Comic footer" className="comic-footer-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={extras[4]} alt="Comic footer" className="comic-footer-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
       </div>
@@ -382,7 +387,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="wl-grid">
           {shouldShowImage && (
             <div className="wl-photo-col">
-              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="wl-hero-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="wl-hero-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           )}
           <div className="wl-text-col">
@@ -408,7 +413,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
             <div className="wl-thumb-row">
               {extras.slice(0, 3).map((slot, i) => (
                 <div key={i} className="wl-thumb">
-                  <Img slot={slot} alt={`Travel ${i}`} className="wl-thumb-img" imageVersion={imageVersion} isActive={isActive} />
+                  <Img slot={slot} alt={`Travel ${i}`} className="wl-thumb-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
                 </div>
               ))}
             </div>
@@ -439,7 +444,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
           <div className="sp-row">
             {shouldShowImage && (
               <div className="sp-portrait">
-                <Img slot={imageSlots.primary} alt={chapterHeadingText} className="sp-portrait-img" imageVersion={imageVersion} isActive={isActive} />
+                <Img slot={imageSlots.primary} alt={chapterHeadingText} className="sp-portrait-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               </div>
             )}
             <div
@@ -456,7 +461,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="sp-collage">
           {extras.slice(0, 4).map((slot, i) => (
             <div key={i} className={`sp-collage-item sp-collage-${i}`}>
-              <Img slot={slot} alt={`Pink ${i}`} className="sp-collage-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={slot} alt={`Pink ${i}`} className="sp-collage-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           ))}
         </div>
@@ -474,7 +479,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="sporty-main">
           {shouldShowImage && (
             <div className="sporty-hero-frame">
-              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="sporty-hero-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="sporty-hero-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           )}
           <div className="sporty-text-box">
@@ -501,7 +506,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
           <div className="sporty-gallery">
             {extras.slice(0, 3).map((slot, i) => (
               <div key={i} className="sporty-gallery-item">
-                <Img slot={slot} alt={`Sport ${i}`} className="sporty-gallery-img" imageVersion={imageVersion} isActive={isActive} />
+                <Img slot={slot} alt={`Sport ${i}`} className="sporty-gallery-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               </div>
             ))}
           </div>
@@ -529,7 +534,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="wellness-split">
           {shouldShowImage && (
             <div className="wellness-photo">
-              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="wellness-photo-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={imageSlots.primary} alt={chapterHeadingText} className="wellness-photo-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           )}
           <div className="wellness-text">
@@ -550,7 +555,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="wellness-thumbs">
           {extras.slice(0, 3).map((slot, i) => (
             <div key={i} className="wellness-thumb">
-              <Img slot={slot} alt={`Wellness ${i}`} className="wellness-thumb-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={slot} alt={`Wellness ${i}`} className="wellness-thumb-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           ))}
         </div>
@@ -579,7 +584,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
           <div className="construct-grid">
             {shouldShowImage && (
               <div className="construct-photo">
-                <Img slot={imageSlots.primary} alt={chapterHeadingText} className="construct-photo-img" imageVersion={imageVersion} isActive={isActive} />
+                <Img slot={imageSlots.primary} alt={chapterHeadingText} className="construct-photo-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               </div>
             )}
             <div
@@ -595,7 +600,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
           <div className="construct-panels">
             {extras.slice(0, 4).map((slot, i) => (
               <div key={i} className="construct-panel">
-                <Img slot={slot} alt={`Panel ${i}`} className="construct-panel-img" imageVersion={imageVersion} isActive={isActive} />
+                <Img slot={slot} alt={`Panel ${i}`} className="construct-panel-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
               </div>
             ))}
           </div>
@@ -627,7 +632,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="nyt-infographic">
           {[imageSlots.primary, ...extras.slice(0, 4)].map((slot, i) => (
             <div key={i} className={`nyt-bird-circle ${circleColors[i % 4]}`}>
-              <Img slot={slot} alt={`Feature ${i}`} className="nyt-bird-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={slot} alt={`Feature ${i}`} className="nyt-bird-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           ))}
         </div>
@@ -656,7 +661,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
       <div className="layout-generic-theme">
         {shouldShowImage && (
           <div className="ebook-image-frame !mt-0 !mb-4 relative">
-            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="generic-hero-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="generic-hero-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
         {shouldShowChapterHeading && (
@@ -681,7 +686,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         <div className="generic-thumb-row">
           {extras.slice(0, 3).map((slot, i) => (
             <div key={i} className="generic-thumb">
-              <Img slot={slot} alt={`Thumb ${i}`} className="generic-thumb-img" imageVersion={imageVersion} isActive={isActive} />
+              <Img slot={slot} alt={`Thumb ${i}`} className="generic-thumb-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
             </div>
           ))}
         </div>
@@ -717,7 +722,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
       <div className="warm-hero-row">
         {shouldShowImage && (
           <div className="warm-arch-frame">
-            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="warm-arch-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={imageSlots.primary} alt={chapterHeadingText} className="warm-arch-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         )}
         <div className="warm-intro-block">
@@ -742,13 +747,13 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
       <div className="warm-gallery-row">
         {extras.slice(0, 3).map((slot, i) => (
           <div key={i} className={`warm-gallery-card warm-gallery-card-${i}`}>
-            <Img slot={slot} alt={`Gallery ${i}`} className="warm-gallery-img" imageVersion={imageVersion} isActive={isActive} />
+            <Img slot={slot} alt={`Gallery ${i}`} className="warm-gallery-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
           </div>
         ))}
       </div>
       <div className="warm-cta-band">
         <div className="warm-cta-blob">
-          <Img slot={extras[3]} alt="CTA" className="warm-cta-img" imageVersion={imageVersion} isActive={isActive} />
+          <Img slot={extras[3]} alt="CTA" className="warm-cta-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
         </div>
         <div className="warm-cta-text">
           <span className="warm-cta-kicker">Call to Action</span>
@@ -756,7 +761,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
         </div>
       </div>
       <div className="warm-footer-arch">
-        <Img slot={extras[4]} alt="Footer" className="warm-footer-arch-img" imageVersion={imageVersion} isActive={isActive} />
+        <Img slot={extras[4]} alt="Footer" className="warm-footer-arch-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
       </div>
     </div>
   );
