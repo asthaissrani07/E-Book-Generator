@@ -28,6 +28,7 @@ interface EbookViewerProps {
   onDownloadPDF: () => void;
   isExporting: boolean;
   exportProgress: { current: number; total: number };
+  onCancelExport?: () => void;
   onNavigateToDashboard: () => void;
   activePageIndex: number;
   onSelectPage: (idx: number) => void;
@@ -45,6 +46,7 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
   onDownloadPDF,
   isExporting,
   exportProgress,
+  onCancelExport,
   onNavigateToDashboard,
   activePageIndex,
   onSelectPage,
@@ -254,7 +256,9 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
               <p className="text-xs text-slate-400 mt-1">
                 Page {exportProgress.current} of {exportProgress.total}
               </p>
-              <p className="text-[10px] text-slate-500 mt-2">Please keep this tab open</p>
+              <p className="text-[10px] text-slate-500 mt-2">
+                Keep this tab open — the file downloads when progress hits 100%
+              </p>
             </div>
             <div className="w-full bg-slate-950 h-2 rounded-full overflow-hidden">
               <div
@@ -264,6 +268,15 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
                 }}
               />
             </div>
+            {onCancelExport && (
+              <button
+                type="button"
+                onClick={onCancelExport}
+                className="text-[11px] text-slate-400 hover:text-slate-200 underline underline-offset-2"
+              >
+                Cancel export
+              </button>
+            )}
           </div>
         </div>
       )}

@@ -46,12 +46,35 @@ export async function waitForNextPaint(): Promise<void> {
 }
 
 /** Yield to the browser so the tab stays responsive during long exports. */
-export function yieldToBrowser(ms = 12): Promise<void> {
+export function yieldToBrowser(ms = 16): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) =>
+      setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms)
+    ),
+  ]);
+}
+
+/** Poll until the export page element is mounted. */
+export async function waitForPageElement(
+  getPageElement: () => HTMLElement | null,
+  timeoutMs = 4000
+): Promise<HTMLElement> {
+  const start = Date.now();
+  while (Date.now() - start < timeoutMs) {
+    const el = getPageElement();
+    if (el) return el;
+    await yieldToBrowser(20);
+  }
+  throw new Error('Export page element not ready — try again.');
+}
+
 /** Wait until images inside the export root have loaded (or time out). */
-export function waitForExportImages(root: HTMLElement, timeoutMs = 8000): Promise<void> {
+export function waitForExportImages(root: HTMLElement, timeoutMs = 2500): Promise<void> {
   const images = Array.from(root.querySelectorAll('img'));
   const pending = images.filter((img) => !img.complete || img.naturalWidth === 0);
   if (pending.length === 0) return Promise.resolve();
@@ -74,13 +97,31 @@ export function waitForExportImages(root: HTMLElement, timeoutMs = 8000): Promis
   ]);
 }
 
+function triggerPdfDownload(doc: { output: (type: string) => Blob }, filename: string): void {
+  const blob = doc.output('blob');
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename;
+  link.rel = 'noopener';
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}
+
 export interface PageByPageExportOptions {
   totalPages: number;
   filename: string;
   onRenderPage: (pageIndex: number) => void | Promise<void>;
   onProgress?: (current: number, total: number) => void;
   getPageElement: () => HTMLElement | null;
+  signal?: AbortSignal;
 }
+
+const EXPORT_CANVAS_SCALE = 1;
+const EXPORT_JPEG_QUALITY = 0.82;
+const PAGE_CAPTURE_TIMEOUT_MS = 45_000;
 
 /**
  * Export one page at a time — keeps the browser responsive for large books (100+ pages).
@@ -92,9 +133,9 @@ export async function exportEbookPageByPage(options: PageByPageExportOptions): P
     throw new Error('PDF libraries not loaded. Please wait and try again.');
   }
 
-  const { totalPages, filename, onRenderPage, onProgress, getPageElement } = options;
+  const { totalPages, filename, onRenderPage, onProgress, getPageElement, signal } = options;
   const html2canvasOpts = {
-    scale: 1.35,
+    scale: EXPORT_CANVAS_SCALE,
     useCORS: true,
     allowTaint: false,
     logging: false,
@@ -103,42 +144,50 @@ export async function exportEbookPageByPage(options: PageByPageExportOptions): P
     windowWidth: 595,
     scrollX: 0,
     scrollY: 0,
+    imageTimeout: 3000,
   };
 
   let doc: InstanceType<typeof jspdf> | null = null;
 
-  for (let i = 0; i < totalPages; i++) {
-    await onRenderPage(i);
-    await waitForNextPaint();
+  if (document.fonts?.ready) {
+    await document.fonts.ready.catch(() => undefined);
+  }
 
-    const pageEl = getPageElement();
-    if (!pageEl) {
-      throw new Error(`Export page element missing at index ${i}`);
+  for (let i = 0; i < totalPages; i++) {
+    if (signal?.aborted) {
+      throw new Error('Export cancelled.');
     }
 
-    await waitForExportImages(pageEl, 6000);
+    onProgress?.(i + 1, totalPages);
 
-    const canvas = await html2pdf()
-      .set({ html2canvas: html2canvasOpts })
-      .from(pageEl)
-      .toCanvas();
+    await onRenderPage(i);
+    await waitForNextPaint();
+    await yieldToBrowser(40);
 
-    const imgData = canvas.toDataURL('image/jpeg', 0.88);
+    const pageEl = await waitForPageElement(getPageElement);
+    await waitForExportImages(pageEl, 2500);
+
+    const canvas = await withTimeout(
+      html2pdf().set({ html2canvas: html2canvasOpts }).from(pageEl).toCanvas() as Promise<HTMLCanvasElement>,
+      PAGE_CAPTURE_TIMEOUT_MS,
+      `Page ${i + 1} capture`
+    );
+
+    const imgData = canvas.toDataURL('image/jpeg', EXPORT_JPEG_QUALITY);
 
     if (!doc) {
-      doc = new jspdf({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+      doc = new jspdf({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
     } else {
       doc.addPage();
     }
 
     doc.addImage(imgData, 'JPEG', 0, 0, 210, 297);
-    onProgress?.(i + 1, totalPages);
-    await yieldToBrowser();
+    await yieldToBrowser(8);
   }
 
   if (!doc) {
     throw new Error('No pages were exported.');
   }
 
-  doc.save(filename);
+  triggerPdfDownload(doc, filename);
 }

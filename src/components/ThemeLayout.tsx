@@ -44,6 +44,7 @@ const Img: React.FC<{
     alt={alt}
     className={className}
     eager={isActive || pdfExportMode}
+    exportMode={pdfExportMode}
   />
 );
 

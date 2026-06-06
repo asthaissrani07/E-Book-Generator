@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { RefreshCw } from 'lucide-react';
-import { getPlaceholderImageUrl, getStockFallbackUrl, resolveImageUrl } from '../utils/imageHelper';
+import {
+  getExportSafeImageUrl,
+  getPlaceholderImageUrl,
+  getStockFallbackUrl,
+  resolveImageUrl,
+} from '../utils/imageHelper';
 
 interface ResolvedImageProps {
   prompt: string;
@@ -9,6 +14,8 @@ interface ResolvedImageProps {
   className?: string;
   style?: React.CSSProperties;
   eager?: boolean;
+  /** PDF export: use cached/stock images only — no slow AI fetches. */
+  exportMode?: boolean;
 }
 
 export const ResolvedImage: React.FC<ResolvedImageProps> = ({
@@ -18,19 +25,23 @@ export const ResolvedImage: React.FC<ResolvedImageProps> = ({
   className = '',
   style,
   eager = false,
+  exportMode = false,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const instantSrc = useMemo(() => getStockFallbackUrl(prompt, seed), [prompt, seed]);
+  const instantSrc = useMemo(
+    () => (exportMode ? getExportSafeImageUrl(prompt, seed) : getStockFallbackUrl(prompt, seed)),
+    [exportMode, prompt, seed]
+  );
   const [src, setSrc] = useState(instantSrc);
   const [upgrading, setUpgrading] = useState(false);
-  const [visible, setVisible] = useState(eager);
+  const [visible, setVisible] = useState(eager || exportMode);
 
   useEffect(() => {
     setSrc(instantSrc);
   }, [instantSrc]);
 
   useEffect(() => {
-    if (eager) return;
+    if (exportMode || eager) return;
     const node = containerRef.current;
     if (!node) return;
 
@@ -49,7 +60,7 @@ export const ResolvedImage: React.FC<ResolvedImageProps> = ({
   }, [eager]);
 
   useEffect(() => {
-    if (!visible) return;
+    if (exportMode || !visible) return;
 
     let cancelled = false;
     setUpgrading(true);
@@ -68,11 +79,13 @@ export const ResolvedImage: React.FC<ResolvedImageProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [visible, prompt, seed, alt]);
+  }, [exportMode, visible, prompt, seed, alt]);
+
+  const needsCrossOrigin = exportMode && !src.startsWith('blob:') && !src.startsWith('data:');
 
   return (
     <div ref={containerRef} className={`relative ${className}`}>
-      {upgrading && (
+      {upgrading && !exportMode && (
         <div className="absolute top-1 right-1 z-10 bg-black/40 rounded-full p-0.5">
           <RefreshCw size={10} className="animate-spin text-white/90" />
         </div>
@@ -81,6 +94,7 @@ export const ResolvedImage: React.FC<ResolvedImageProps> = ({
         src={src}
         alt={alt}
         style={style}
+        crossOrigin={needsCrossOrigin ? 'anonymous' : undefined}
         onError={() => setSrc(getPlaceholderImageUrl(alt, seed))}
       />
     </div>

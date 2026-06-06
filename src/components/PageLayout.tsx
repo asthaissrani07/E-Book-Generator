@@ -2,7 +2,12 @@ import React, { useMemo, useState, useEffect } from 'react';
 import { Layout, Image, Trash2, RefreshCw, ArrowRight } from 'lucide-react';
 import type { EbookSection } from '../utils/pdfParser';
 import type { ThemeId } from '../themes/types';
-import { getThemeImageSlotsForPage, getPlaceholderImageUrl, resolveImageUrl } from '../utils/imageHelper';
+import {
+  getThemeImageSlotsForPage,
+  getPlaceholderImageUrl,
+  getExportSafeImageUrl,
+  resolveImageUrl,
+} from '../utils/imageHelper';
 import { ThemeCover, ThemeEditorial } from './ThemeLayout';
 
 interface PageLayoutProps {
@@ -48,10 +53,16 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   // Sync state if prompt changes externally
   useEffect(() => {
     setPromptText(section.imagePrompt);
-    setImgLoading(true);
-
-    let cancelled = false;
     const prompt = section.imagePrompt || chapterHeadingText;
+
+    if (pdfExportMode) {
+      setImgSrc(getExportSafeImageUrl(prompt, pageIndex));
+      setImgLoading(false);
+      return;
+    }
+
+    setImgLoading(true);
+    let cancelled = false;
     resolveImageUrl(prompt, pageIndex)
       .then((url) => {
         if (!cancelled) setImgSrc(url);
@@ -63,7 +74,14 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     return () => {
       cancelled = true;
     };
-  }, [section.imagePrompt, section.imageUrl, imageVersion, chapterHeadingText, pageIndex]);
+  }, [
+    section.imagePrompt,
+    section.imageUrl,
+    imageVersion,
+    chapterHeadingText,
+    pageIndex,
+    pdfExportMode,
+  ]);
 
   const handleTextChange = (field: 'title' | 'content', val: string) => {
     onUpdateSection({
@@ -109,6 +127,11 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       <img
         src={imgSrc}
         alt={chapterHeadingText}
+        crossOrigin={
+          pdfExportMode && !imgSrc.startsWith('blob:') && !imgSrc.startsWith('data:')
+            ? 'anonymous'
+            : undefined
+        }
         onLoad={() => setImgLoading(false)}
         onError={handleImgError}
         style={style}

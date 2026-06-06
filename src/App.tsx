@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import { Dashboard } from './components/Dashboard';
 import { EbookViewer } from './components/EbookViewer';
@@ -46,8 +46,7 @@ function App() {
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [isGeneratingImageMap, setIsGeneratingImageMap] = useState<{ [key: number]: boolean }>({});
   const [activeMobileView, setActiveMobileView] = useState<'controls' | 'preview'>('controls');
-
-
+  const exportAbortRef = useRef<AbortController | null>(null);
 
   const handleDownloadPDF = async () => {
     if (sections.length === 0) {
@@ -67,7 +66,17 @@ function App() {
       return;
     }
 
+    if (sections.length > 50) {
+      const minutes = Math.max(5, Math.round(sections.length * 0.15));
+      const proceed = window.confirm(
+        `This book has ${sections.length} pages. Export usually takes about ${minutes} minutes. Keep this tab open and wait for the download to start. Continue?`
+      );
+      if (!proceed) return;
+    }
+
     const filename = `${(bookTitle || 'ebook').toLowerCase().replace(/\s+/g, '_')}_ebook.pdf`;
+    const abort = new AbortController();
+    exportAbortRef.current = abort;
     setIsExporting(true);
     setExportProgress({ current: 0, total: sections.length });
 
@@ -77,6 +86,7 @@ function App() {
       await exportEbookPageByPage({
         totalPages: sections.length,
         filename,
+        signal: abort.signal,
         onProgress: (current, total) => setExportProgress({ current, total }),
         onRenderPage: (pageIndex) => {
           flushSync(() => setPdfExportPageIndex(pageIndex));
@@ -86,15 +96,25 @@ function App() {
       });
     } catch (err) {
       console.error('PDF generation failed: ', err);
-      alert(
-        'Could not export PDF. For very large books this may take several minutes — try again, or use Print PDF.'
-      );
+      const message = err instanceof Error ? err.message : String(err);
+      if (message.includes('cancelled')) {
+        alert('PDF export cancelled.');
+      } else {
+        alert(
+          `Could not finish the PDF export${message ? ` (${message})` : ''}. Try again and keep this tab open until the progress bar reaches 100%.`
+        );
+      }
     } finally {
+      exportAbortRef.current = null;
       flushSync(() => setPdfExportPageIndex(null));
       restoreCaptureStyles();
       setIsExporting(false);
       setExportProgress({ current: 0, total: 0 });
     }
+  };
+
+  const handleCancelExport = () => {
+    exportAbortRef.current?.abort();
   };
 
   const handleUploadPdf = async (file: File) => {
@@ -389,6 +409,7 @@ function App() {
             onDownloadPDF={handleDownloadPDF}
             isExporting={isExporting}
             exportProgress={exportProgress}
+            onCancelExport={handleCancelExport}
             onNavigateToDashboard={() => setActiveMobileView('controls')}
             activePageIndex={activePageIndex}
             onSelectPage={handleSelectPage}

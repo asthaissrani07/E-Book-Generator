@@ -224,6 +224,21 @@ async function fetchPollinationsBlob(prompt: string, seed: number): Promise<Blob
  * Queues Pollinations requests, retries on failure, and falls back to stock photos
  * so every image slot always renders a real photograph.
  */
+/** Fast, CORS-safe URL for PDF export — never triggers async Pollinations calls. */
+export function getExportSafeImageUrl(prompt: string, seed = 0): string {
+  const key = cacheKey(prompt, seed);
+  const cached = resolvedCache.get(key);
+  if (
+    cached &&
+    (cached.startsWith('blob:') ||
+      cached.startsWith('data:') ||
+      cached.includes('picsum.photos'))
+  ) {
+    return cached;
+  }
+  return getStockFallbackUrl(prompt, seed);
+}
+
 export async function resolveImageUrl(prompt: string, seed = 0): Promise<string> {
   const key = cacheKey(prompt, seed);
   const cached = resolvedCache.get(key);
