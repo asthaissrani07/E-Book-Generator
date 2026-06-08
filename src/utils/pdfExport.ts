@@ -206,7 +206,12 @@ function collectExportImageSlots(
   sections.forEach((section, index) => {
     const pageIndex = index + 1;
     const chapterTitle = section.chapterTitle || section.title;
-    const themeSlots = getThemeImageSlotsForPage(themeId, chapterTitle, bookTitle, pageIndex);
+    const themeSlots = getThemeImageSlotsForPage(
+      section.layout === 'cover' ? 'editorial' : themeId,
+      chapterTitle,
+      bookTitle,
+      pageIndex
+    );
     add(themeSlots.primary.prompt, themeSlots.primary.seed);
     themeSlots.extras.forEach((slot) => add(slot.prompt, slot.seed));
     add(section.imagePrompt || chapterTitle, pageIndex);

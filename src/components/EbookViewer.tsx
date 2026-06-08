@@ -20,6 +20,7 @@ interface EbookViewerProps {
   sections: EbookSection[];
   bookTitle: string;
   selectedTheme: ThemeId;
+  customThemeStyles?: React.CSSProperties;
   onUpdateSection: (index: number, updated: EbookSection) => void;
   onDeleteSection: (index: number) => void;
   onAddSection: () => void;
@@ -37,6 +38,7 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
   sections,
   bookTitle,
   selectedTheme,
+  customThemeStyles,
   onUpdateSection,
   onDeleteSection,
   onAddSection,
@@ -76,6 +78,7 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
       key={section.id}
       className="ebook-page-wrapper page-break cursor-pointer"
       onClick={() => onSelectPage(idx)}
+      style={section.layout === 'cover' ? undefined : customThemeStyles}
     >
       <PageLayout
         section={section}
@@ -226,7 +229,11 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
 
       {/* Print area: active page only for large books */}
       <div className="hidden print-container print:block">
-        <div id="ebook-print-area-native" className={`theme-${selectedTheme}`}>
+        <div
+          id="ebook-print-area-native"
+          className={`theme-${selectedTheme}`}
+          style={sections[activePageIndex]?.layout === 'cover' ? undefined : customThemeStyles}
+        >
           {sections[activePageIndex] && (
             <PageLayout
               key={`print-${sections[activePageIndex].id}`}

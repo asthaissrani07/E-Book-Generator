@@ -725,9 +725,10 @@ html:has(.celestial-landing) {
 
 .celestial-theme-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 0.85rem;
 }
+
 
 .celestial-theme-card {
   display: flex;
@@ -862,8 +863,8 @@ html:has(.celestial-landing) {
   cursor: wait;
 }
 
-@media (max-width: 480px) {
+@media (min-width: 600px) and (max-width: 767px) {
   .celestial-theme-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

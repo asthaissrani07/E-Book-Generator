@@ -9,7 +9,10 @@ export type ThemeId =
   | 'sporty'
   | 'wellness'
   | 'construct'
-  | 'newspaper';
+  | 'newspaper'
+  | 'pinterest'
+  | 'pinterest_teal'
+  | 'pinterest_pink';
 
 export interface ThemeOption {
   id: ThemeId;

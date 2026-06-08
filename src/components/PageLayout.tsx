@@ -45,9 +45,127 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   const [imageVersion, setImageVersion] = useState(0);
   const chapterHeadingText = section.chapterTitle || section.title;
 
+  const [showToolbar, setShowToolbar] = useState(false);
+  const [toolbarCoords, setToolbarCoords] = useState({ top: 0, left: 0 });
+
+  useEffect(() => {
+    const handleSelectionChange = () => {
+      const sel = window.getSelection();
+      if (!sel || sel.isCollapsed || sel.toString().trim().length === 0) {
+        setShowToolbar(false);
+        return;
+      }
+
+      const anchorNode = sel.anchorNode;
+      if (!anchorNode) return;
+
+      const pageContainer = document.getElementById(`page-container-${pageIndex}`);
+      if (!pageContainer || !pageContainer.contains(anchorNode)) {
+        setShowToolbar(false);
+        return;
+      }
+
+      try {
+        const range = sel.getRangeAt(0);
+        const rect = range.getBoundingClientRect();
+
+        if (rect.width === 0 || rect.height === 0) {
+          setShowToolbar(false);
+          return;
+        }
+
+        const pageRect = pageContainer.getBoundingClientRect();
+        const top = rect.top - pageRect.top - 45;
+        const left = rect.left - pageRect.left + (rect.width / 2) - 150;
+
+        setToolbarCoords({
+          top: Math.max(10, top),
+          left: Math.max(10, Math.min(pageRect.width - 310, left))
+        });
+        setShowToolbar(true);
+      } catch (err) {
+        // Selection range temporarily invalid
+      }
+    };
+
+    document.addEventListener('selectionchange', handleSelectionChange);
+    return () => {
+      document.removeEventListener('selectionchange', handleSelectionChange);
+    };
+  }, [pageIndex, section.layout]);
+
+  const applyHighlight = (color: string) => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    const editable = anchor?.parentElement?.closest('[contenteditable]') as HTMLElement | null;
+    if (!editable) return;
+
+    if (color === '') {
+      document.execCommand('removeFormat', false);
+    } else {
+      document.execCommand('backColor', false, color);
+    }
+    editable.blur();
+  };
+
+  const applyBold = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    const editable = anchor?.parentElement?.closest('[contenteditable]') as HTMLElement | null;
+    if (!editable) return;
+
+    document.execCommand('bold', false);
+    editable.blur();
+  };
+
+  const applyItalic = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    const editable = anchor?.parentElement?.closest('[contenteditable]') as HTMLElement | null;
+    if (!editable) return;
+
+    document.execCommand('italic', false);
+    editable.blur();
+  };
+
+  const handleDeleteText = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    const editable = anchor?.parentElement?.closest('[contenteditable]') as HTMLElement | null;
+    if (!editable) return;
+
+    document.execCommand('delete', false);
+    editable.blur();
+  };
+
+  const handleInsertText = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0) return;
+    const anchor = sel.anchorNode;
+    const editable = anchor?.parentElement?.closest('[contenteditable]') as HTMLElement | null;
+    if (!editable) return;
+
+    const txt = prompt('Enter text to add / replace selection:');
+    if (txt !== null) {
+      document.execCommand('insertText', false, txt);
+      editable.blur();
+    }
+  };
+
   const imageSlots = useMemo(
-    () => getThemeImageSlotsForPage(selectedTheme, chapterHeadingText, bookTitle, pageIndex),
-    [selectedTheme, chapterHeadingText, bookTitle, pageIndex]
+    () => getThemeImageSlotsForPage(
+      section.layout === 'cover'
+        ? (selectedTheme === 'pinterest' || selectedTheme === 'pinterest_teal' || selectedTheme === 'pinterest_pink' ? selectedTheme : 'editorial')
+        : selectedTheme,
+      chapterHeadingText,
+      bookTitle,
+      pageIndex
+    ),
+    [selectedTheme, section.layout, chapterHeadingText, bookTitle, pageIndex]
   );
 
   // Sync state if prompt changes externally
@@ -141,8 +259,84 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
 
   return (
     <div
-      className={`ebook-page layout-${section.layout} group relative ${isActive ? 'active-page-ring' : ''} ${pdfExportMode ? 'pdf-export-page' : ''}`}
+      id={`page-container-${pageIndex}`}
+      className={`ebook-page layout-${section.layout} group relative ${isActive ? 'active-page-ring' : ''} ${pdfExportMode ? 'pdf-export-page' : ''} ${section.layout === 'cover' ? (selectedTheme === 'pinterest' || selectedTheme === 'pinterest_teal' || selectedTheme === 'pinterest_pink' ? `theme-${selectedTheme}` : 'theme-editorial') : ''}`}
     >
+      {/* Floating Toolbar for Highlights & Formatting */}
+      {showToolbar && !pdfExportMode && (
+        <div
+          className="absolute z-50 flex items-center gap-2 px-3 py-1.5 bg-slate-900/95 text-white rounded-xl border border-slate-700/80 shadow-2xl backdrop-blur-md animate-fade-in no-print"
+          style={{
+            top: `${toolbarCoords.top}px`,
+            left: `${toolbarCoords.left}px`,
+          }}
+          onMouseDown={(e) => e.preventDefault()}
+        >
+          {/* Highlight options */}
+          <div className="flex items-center gap-1 border-r border-slate-700/60 pr-2">
+            {[
+              { color: '#fef08a', name: 'Yellow' },
+              { color: '#bbf7d0', name: 'Green' },
+              { color: '#fbcfe8', name: 'Pink' },
+              { color: '#bfdbfe', name: 'Blue' },
+              { color: '#fed7aa', name: 'Orange' },
+            ].map((swatch) => (
+              <button
+                key={swatch.color}
+                type="button"
+                onClick={() => applyHighlight(swatch.color)}
+                className="w-3.5 h-3.5 rounded-full border border-white/20 hover:scale-110 transition cursor-pointer"
+                style={{ backgroundColor: swatch.color }}
+                title={`Highlight ${swatch.name}`}
+              />
+            ))}
+            <button
+              type="button"
+              onClick={() => applyHighlight('')}
+              className="w-3.5 h-3.5 rounded-full border border-dashed border-slate-500 hover:scale-110 transition cursor-pointer flex items-center justify-center bg-transparent text-[8px]"
+              title="Clear Highlight"
+            >
+              ❌
+            </button>
+          </div>
+
+          {/* Format/Edit commands */}
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={applyBold}
+              className="px-1.5 py-0.5 hover:bg-slate-800 rounded font-bold text-[10px]"
+              title="Bold"
+            >
+              B
+            </button>
+            <button
+              type="button"
+              onClick={applyItalic}
+              className="px-1.5 py-0.5 hover:bg-slate-800 rounded italic text-[10px]"
+              title="Italic"
+            >
+              I
+            </button>
+            <button
+              type="button"
+              onClick={handleInsertText}
+              className="px-2 py-0.5 hover:bg-slate-800 rounded text-[9px] font-semibold text-slate-200"
+              title="Add or replace text"
+            >
+              + Add Word
+            </button>
+            <button
+              type="button"
+              onClick={handleDeleteText}
+              className="px-2 py-0.5 hover:bg-red-950 text-red-400 hover:text-red-300 rounded text-[9px] font-semibold"
+              title="Delete text"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      )}
       {/* Interactive Controls Overlay (Hidden on Print) */}
       <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-30 no-print bg-slate-900/95 backdrop-blur border border-slate-700/60 p-1.5 rounded-lg shadow-xl">
         <button
@@ -231,7 +425,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
       <div className="ebook-page-body">
         {section.layout === 'cover' ? (
           <ThemeCover
-            themeId={selectedTheme}
+            themeId={(selectedTheme === 'pinterest' || selectedTheme === 'pinterest_teal' || selectedTheme === 'pinterest_pink') ? selectedTheme : 'editorial'}
             section={section}
             imgSrc={imgSrc}
             imgLoading={imgLoading}
@@ -246,35 +440,124 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             pdfExportMode={pdfExportMode}
           />
         ) : section.layout === 'split' ? (
-          // SPLIT LAYOUT TEMPLATE (Text Left, Image Right)
-          <div className={shouldShowImage ? 'layout-split-grid h-full' : 'h-full'}>
-            <div className={`flex flex-col justify-center ${shouldShowImage ? 'pr-2' : ''}`}>
-              {shouldShowChapterHeading && (
+          selectedTheme === 'pinterest' ? (
+            <div className="pinterest-about-container h-full w-full">
+              <div className="pinterest-dropcap-col">
+                <span className="pinterest-dropcap">
+                  {(chapterHeadingText || 'A')[0].toUpperCase()}
+                </span>
+              </div>
+              <div className="pinterest-about-text">
+                {shouldShowChapterHeading && (
+                  <h2
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
+                    className="pinterest-about-title focus:outline-none focus:bg-black/5 rounded px-1"
+                  >
+                    {chapterHeadingText}
+                  </h2>
+                )}
+                <div className="pinterest-about-kicker">Get to know us</div>
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                  className="ebook-p focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line text-sm"
+                />
+              </div>
+            </div>
+          ) : selectedTheme === 'pinterest_teal' ? (
+            <div className="pinterest-teal-msg-container h-full w-full">
+              <div className="pinterest-teal-msg-left">
+                {shouldShowChapterHeading && (
+                  <h2
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
+                    className="pinterest-teal-msg-title focus:outline-none focus:bg-black/5 rounded px-1"
+                  >
+                    {chapterHeadingText}
+                  </h2>
+                )}
+                <div className="pinterest-teal-msg-img-frame">
+                  {renderImage()}
+                </div>
+                <div className="pinterest-teal-msg-badge">
+                  <div className="pinterest-teal-msg-badge-name">Basil Heilward</div>
+                  <div className="pinterest-teal-msg-badge-role">CEO & FOUNDER</div>
+                </div>
+              </div>
+              <div className="pinterest-teal-msg-right">
+                <div className="pinterest-teal-msg-quote">
+                  The only limit to our realization of tomorrow will be our doubts of today.
+                </div>
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                  className="pinterest-teal-msg-body focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line"
+                />
+              </div>
+            </div>
+          ) : selectedTheme === 'pinterest_pink' ? (
+            <div className="pinterest-pink-about-container h-full w-full">
+              <div className="pinterest-pink-about-card">
+                {shouldShowImage && (
+                  <div className="pinterest-pink-about-photo">
+                    {renderImage()}
+                  </div>
+                )}
+                <div className="pinterest-pink-about-kicker">About the</div>
                 <h2
                   contentEditable
                   suppressContentEditableWarning
                   onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
-                  className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
+                  className="pinterest-pink-about-title focus:outline-none focus:bg-black/5 rounded px-1"
                 >
-                  {chapterHeadingText}
+                  {chapterHeadingText || 'Diandra'}
                 </h2>
-              )}
-              <div
-                contentEditable
-                suppressContentEditableWarning
-                onBlur={(e) => handleTextChange('content', e.currentTarget.innerText)}
-                className="ebook-p focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-wrap text-sm"
-              >
-                {section.content}
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                  className="pinterest-pink-about-body focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line text-sm"
+                />
               </div>
             </div>
-            
-            {shouldShowImage && (
-              <div className="ebook-image-frame h-full min-h-[300px] flex items-center relative">
-                {renderImage({ height: '100%', minHeight: '300px' })}
+          ) : (
+            // SPLIT LAYOUT TEMPLATE (Text Left, Image Right)
+            <div className={shouldShowImage ? 'layout-split-grid h-full' : 'h-full'}>
+              <div className={`flex flex-col justify-center ${shouldShowImage ? 'pr-2' : ''}`}>
+                {shouldShowChapterHeading && (
+                  <h2
+                    contentEditable
+                    suppressContentEditableWarning
+                    onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
+                    className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
+                  >
+                    {chapterHeadingText}
+                  </h2>
+                )}
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                  className="ebook-p focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line text-sm"
+                />
               </div>
-            )}
-          </div>
+              
+              {shouldShowImage && (
+                <div className="ebook-image-frame h-full min-h-[300px] flex items-center relative">
+                  {renderImage({ height: '100%', minHeight: '300px' })}
+                </div>
+              )}
+            </div>
+          )
         ) : section.layout === 'editorial' ? (
           <ThemeEditorial
             themeId={selectedTheme}
@@ -291,63 +574,204 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
             pdfExportMode={pdfExportMode}
           />
         ) : section.layout === 'magazine' ? (
-          // MAGAZINE LAYOUT TEMPLATE (Multi-columns + Top Header Graphic)
-          <div>
-            {shouldShowImage && (
-              <div className="ebook-image-frame !mt-0 !mb-4 relative">
-                {renderImage({ height: '180px' })}
+          selectedTheme === 'pinterest' ? (
+            <div className="pinterest-step-container h-full w-full">
+              {shouldShowImage && (
+                <div className="pinterest-step-images no-print">
+                  <div className="pinterest-step-arch-frame relative">
+                    {renderImage({ height: '100%' })}
+                  </div>
+                  <div className="pinterest-step-arch-frame">
+                    <img
+                      src={section.extraImageUrls?.[0] || section.imageUrl}
+                      alt="Step 2"
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="pinterest-step-band">
+                {chapterHeadingText || 'Step by Step'}
               </div>
-            )}
-            
-            {shouldShowChapterHeading && (
-              <h2
+
+              <div
                 contentEditable
                 suppressContentEditableWarning
-                onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
-                className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
-              >
-                {chapterHeadingText}
-              </h2>
-            )}
-            
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => handleTextChange('content', e.currentTarget.innerText)}
-              className="ebook-columns focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-wrap"
-            >
-              {section.content}
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="pinterest-step-grid focus:outline-none focus:bg-black/5 rounded p-1"
+              />
             </div>
-          </div>
+          ) : selectedTheme === 'pinterest_teal' ? (
+            <div className="pinterest-teal-val-container h-full w-full">
+              {shouldShowImage && (
+                <div className="pinterest-teal-val-top-img relative">
+                  {renderImage()}
+                </div>
+              )}
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="pinterest-teal-val-columns focus:outline-none focus:bg-black/5 rounded p-1"
+              />
+              <div className="pinterest-teal-val-banner">
+                <div className="pinterest-teal-val-icon-box">
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M20 7h-3V5a2 2 0 00-2-2H9a2 2 0 00-2 2v2H4a2 2 0 00-2 2v10a2 2 0 002 2h16a2 2 0 002-2V9a2 2 0 00-2-2zM9 5h6v2H9V5z" />
+                  </svg>
+                </div>
+                <div className="pinterest-teal-val-banner-text">
+                  We believe in creating value that lasts a lifetime.
+                </div>
+              </div>
+            </div>
+          ) : selectedTheme === 'pinterest_pink' ? (
+            <div className="pinterest-pink-mag-container h-full w-full">
+              <div className="pinterest-pink-mag-left">
+                <div className="pinterest-pink-mag-quote">
+                  Fashion is custom-made only for the elite.
+                </div>
+                <div
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                  dangerouslySetInnerHTML={{ __html: section.content }}
+                  className="pinterest-pink-mag-columns focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line text-sm"
+                />
+              </div>
+              <div className="pinterest-pink-mag-right no-print">
+                <div className="pinterest-pink-polaroids">
+                  <div className="pinterest-pink-polaroid-1">
+                    <div className="pinterest-pink-polaroid-1-img">
+                      {renderImage()}
+                    </div>
+                    <div className="pinterest-pink-polaroid-1-text">Aesthetic Mode</div>
+                  </div>
+                  <div className="pinterest-pink-polaroid-2">
+                    <div className="pinterest-pink-polaroid-2-img">
+                      <img
+                        src={section.extraImageUrls?.[0] || section.imageUrl}
+                        alt="Polaroid 2"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            // MAGAZINE LAYOUT TEMPLATE (Multi-columns + Top Header Graphic)
+            <div>
+              {shouldShowImage && (
+                <div className="ebook-image-frame !mt-0 !mb-4 relative">
+                  {renderImage({ height: '180px' })}
+                </div>
+              )}
+              
+              {shouldShowChapterHeading && (
+                <h2
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
+                  className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
+                >
+                  {chapterHeadingText}
+                </h2>
+              )}
+              
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="ebook-columns focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line"
+              />
+            </div>
+          )
         ) : (
-          // STANDARD TEXTBOOK LAYOUT (Image in the middle, content flows above and below)
-          <div>
-            {shouldShowChapterHeading && (
-              <h2
+          selectedTheme === 'pinterest' ? (
+            <div className="pinterest-qa-container h-full w-full">
+              <span className="pinterest-qa-watermark">&amp;</span>
+              <div
                 contentEditable
                 suppressContentEditableWarning
-                onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
-                className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
-              >
-                {chapterHeadingText}
-              </h2>
-            )}
-
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => handleTextChange('content', e.currentTarget.innerText)}
-              className="ebook-p focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-wrap"
-            >
-              {section.content}
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="pinterest-qa-list focus:outline-none focus:bg-black/5 rounded p-1"
+              />
             </div>
-
-            {shouldShowImage && (
-              <div className="ebook-image-frame relative">
-                {renderImage()}
+          ) : selectedTheme === 'pinterest_teal' ? (
+            <div className="pinterest-teal-team-container h-full w-full">
+              <div className="pinterest-teal-team-header">
+                {chapterHeadingText || 'Meet Our Team'}
               </div>
-            )}
-          </div>
+              <div className="pinterest-teal-team-card">
+                <div className="pinterest-teal-team-photo relative">
+                  {renderImage()}
+                </div>
+                <div className="pinterest-teal-team-info">
+                  <div className="pinterest-teal-team-name">Linda Brown</div>
+                  <div className="pinterest-teal-team-role">CEO & FOUNDER</div>
+                  <div className="pinterest-teal-team-line" />
+                  <div className="pinterest-teal-team-desc">
+                    Talent wins games, but teamwork and intelligence win championships.
+                  </div>
+                </div>
+              </div>
+              <div className="pinterest-teal-team-leader-msg">The Leader Message</div>
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="pinterest-teal-team-leader-body focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line"
+              />
+            </div>
+          ) : selectedTheme === 'pinterest_pink' ? (
+            <div className="pinterest-pink-std-container h-full w-full">
+              <div className="pinterest-pink-std-quote">
+                Fashion is custom-made only for the elite.
+              </div>
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="pinterest-pink-std-columns focus:outline-none focus:bg-black/5 rounded p-1 text-sm"
+              />
+            </div>
+          ) : (
+            // STANDARD TEXTBOOK LAYOUT (Image in the middle, content flows above and below)
+            <div>
+              {shouldShowChapterHeading && (
+                <h2
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={(e) => handleTextChange('title', e.currentTarget.innerText)}
+                  className="ebook-h1 focus:outline-none focus:bg-black/5 rounded px-1"
+                >
+                  {chapterHeadingText}
+                </h2>
+              )}
+
+              <div
+                contentEditable
+                suppressContentEditableWarning
+                onBlur={(e) => handleTextChange('content', e.currentTarget.innerHTML)}
+                dangerouslySetInnerHTML={{ __html: section.content }}
+                className="ebook-p focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line"
+              />
+
+              {shouldShowImage && (
+                <div className="ebook-image-frame relative">
+                  {renderImage()}
+                </div>
+              )}
+            </div>
+          )
         )}
       </div>
 

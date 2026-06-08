@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { flushSync } from 'react-dom';
 import { Dashboard } from './components/Dashboard';
 import { EbookViewer } from './components/EbookViewer';
@@ -42,6 +42,41 @@ function App() {
   };
 
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('editorial');
+  const [customBgColor, setCustomBgColor] = useState('');
+  const [customTextColor, setCustomTextColor] = useState('');
+  const [customAccentColor, setCustomAccentColor] = useState('');
+  const [customFontHeader, setCustomFontHeader] = useState('');
+  const [customFontBody, setCustomFontBody] = useState('');
+  const [customFontSizeMult, setCustomFontSizeMult] = useState(1.0);
+
+  // Load custom Google Fonts dynamically
+  useEffect(() => {
+    const fontsToLoad = [customFontHeader, customFontBody].filter(Boolean) as string[];
+    if (fontsToLoad.length === 0) return;
+    
+    // De-duplicate and filter out system fallbacks
+    const uniqueFonts = Array.from(new Set(fontsToLoad)).filter(f => !['serif', 'sans-serif', 'monospace', 'cursive'].includes(f.toLowerCase()));
+    if (uniqueFonts.length === 0) return;
+
+    const fontUrl = `https://fonts.googleapis.com/css2?family=${uniqueFonts.map(f => f.replace(/\s+/g, '+')).join('&family=')}&display=swap`;
+    const existingLink = document.querySelector(`link[href="${fontUrl}"]`);
+    if (!existingLink) {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = fontUrl;
+      document.head.appendChild(link);
+    }
+  }, [customFontHeader, customFontBody]);
+
+  const customThemeStyles = {
+    ...(customBgColor ? { '--eb-bg': customBgColor } : {}),
+    ...(customTextColor ? { '--eb-text': customTextColor } : {}),
+    ...(customAccentColor ? { '--eb-accent': customAccentColor } : {}),
+    ...(customFontHeader ? { '--eb-font-header': `"${customFontHeader}", sans-serif` } : {}),
+    ...(customFontBody ? { '--eb-font-body': `"${customFontBody}", sans-serif` } : {}),
+    '--eb-font-size-mult': String(customFontSizeMult),
+  } as React.CSSProperties;
+
   const [isStyling, setIsStyling] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
@@ -210,7 +245,7 @@ function App() {
             groqConfig,
             current.title,
             rewrittenContent,
-            selectedTheme
+            current.layout === 'cover' ? 'editorial' : selectedTheme
           );
         } catch (e) {
           console.warn(`Failed image prompt generation for chapter ${i + 1}:`, e);
@@ -264,7 +299,7 @@ function App() {
           groqConfig,
           current.title,
           current.content,
-          selectedTheme
+          current.layout === 'cover' ? 'editorial' : selectedTheme
         );
       } catch (e: any) {
         console.error("Could not generate prompt using Groq: ", e);
@@ -352,8 +387,8 @@ function App() {
 
   return (
     <div className="app-shell flex flex-col h-screen w-screen overflow-hidden select-none">
-      {/* Mobile Top Navigation Toggle (hidden on desktop screens >= 1024px) */}
-      <div className="lg:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 no-print shrink-0">
+      {/* Mobile Top Navigation Toggle (hidden on desktop screens >= 768px) */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3 bg-slate-900 border-b border-slate-800 no-print shrink-0">
         <div className="flex items-center gap-2">
           <div className="wk-brand-icon">
             <Compass size={18} />
@@ -386,9 +421,9 @@ function App() {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col lg:flex-row w-full h-full overflow-hidden">
+      <div className="flex-1 flex flex-col md:flex-row w-full h-full overflow-hidden">
         {/* 1. Dashboard Control Panel Wrapper */}
-        <div className={`${activeMobileView === 'controls' ? 'flex' : 'hidden'} lg:flex w-full lg:w-[420px] h-full overflow-hidden shrink-0`}>
+        <div className={`${activeMobileView === 'controls' ? 'flex' : 'hidden'} md:flex w-full md:w-[400px] h-full overflow-hidden shrink-0`}>
           <Dashboard
             bookTitle={bookTitle}
             onChangeTitle={setBookTitle}
@@ -396,6 +431,18 @@ function App() {
             groqConfig={groqConfig}
             selectedTheme={selectedTheme}
             onChangeTheme={setSelectedTheme}
+            customBgColor={customBgColor}
+            onChangeBgColor={setCustomBgColor}
+            customTextColor={customTextColor}
+            onChangeTextColor={setCustomTextColor}
+            customAccentColor={customAccentColor}
+            onChangeAccentColor={setCustomAccentColor}
+            customFontHeader={customFontHeader}
+            onChangeFontHeader={setCustomFontHeader}
+            customFontBody={customFontBody}
+            onChangeFontBody={setCustomFontBody}
+            customFontSizeMult={customFontSizeMult}
+            onChangeFontSizeMult={setCustomFontSizeMult}
             onStyleChapters={handleStyleChapters}
             isStyling={isStyling}
             onAddPage={handleAddSection}
@@ -409,11 +456,12 @@ function App() {
         </div>
 
         {/* 2. Scrollable Book Preview Workspace Wrapper */}
-        <div className={`${activeMobileView === 'preview' ? 'flex' : 'hidden'} lg:flex flex-1 h-full overflow-hidden flex flex-col relative`}>
+        <div className={`${activeMobileView === 'preview' ? 'flex' : 'hidden'} md:flex flex-1 h-full overflow-hidden flex flex-col relative`}>
           <EbookViewer
             sections={sections}
             bookTitle={bookTitle}
             selectedTheme={selectedTheme}
+            customThemeStyles={customThemeStyles}
             onUpdateSection={handleUpdateSection}
             onDeleteSection={handleDeleteSection}
             onAddSection={handleAddSection}
@@ -475,10 +523,18 @@ function App() {
         <div
           id="ebook-download-area"
           className={`theme-${selectedTheme} ebook-preview-container`}
-          style={{ width: 595, maxWidth: 595, overflow: 'hidden' }}
+          style={{
+            width: 595,
+            maxWidth: 595,
+            overflow: 'hidden',
+            ...(pdfExportPageIndex !== null && sections[pdfExportPageIndex]?.layout === 'cover' ? {} : customThemeStyles)
+          }}
         >
           {pdfExportPageIndex !== null && sections[pdfExportPageIndex] && (
-            <div className="ebook-page-wrapper page-break">
+            <div
+              className="ebook-page-wrapper page-break"
+              style={sections[pdfExportPageIndex]?.layout === 'cover' ? undefined : customThemeStyles}
+            >
               <PageLayout
                 section={sections[pdfExportPageIndex]}
                 pageIndex={pdfExportPageIndex + 1}

@@ -5,6 +5,43 @@ interface PDFTextItem {
   fontSize: number;
   y: number;
   x: number;
+  width: number;
+}
+
+function reconstructParagraphs(lines: string[]): string {
+  if (lines.length === 0) return "";
+
+  const paragraphs: string[] = [];
+  let currentParagraph = "";
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+
+    if (currentParagraph === "") {
+      currentParagraph = line;
+    } else {
+      if (currentParagraph.endsWith("-")) {
+        currentParagraph = currentParagraph.slice(0, -1) + line;
+      } else if (currentParagraph.endsWith("-\u00ad")) {
+        currentParagraph = currentParagraph.slice(0, -2) + line;
+      } else {
+        currentParagraph += " " + line;
+      }
+    }
+
+    const isParagraphEnd = /[.!?]['"]?$/.test(line);
+    if (isParagraphEnd) {
+      paragraphs.push(currentParagraph);
+      currentParagraph = "";
+    }
+  }
+
+  if (currentParagraph) {
+    paragraphs.push(currentParagraph);
+  }
+
+  return paragraphs.join("\n\n");
 }
 
 export interface EbookSection {
@@ -93,7 +130,8 @@ export async function parsePdf(file: File): Promise<{ title: string; sections: E
         const fontSize = Math.abs(transform[3]) || 12;
         const y = viewport.height - transform[5];
         const x = transform[4];
-        return { str: item.str, fontSize, y, x };
+        const width = item.width || 0;
+        return { str: item.str, fontSize, y, x, width };
       })
       .filter((item: any) => item.str.trim().length > 0);
 
@@ -116,13 +154,32 @@ export async function parsePdf(file: File): Promise<{ title: string; sections: E
 
     sortedLinesY.forEach((lineY) => {
       const elements = linesMap[lineY].sort((a, b) => a.x - b.x);
-      const combinedText = elements.map((el) => el.str).join(" ");
+      
+      let combinedText = "";
+      if (elements.length > 0) {
+        combinedText = elements[0].str;
+        for (let i = 1; i < elements.length; i++) {
+          const prev = elements[i - 1];
+          const curr = elements[i];
+          const gapThreshold = prev.fontSize * 0.22;
+          const expectedEnd = prev.x + prev.width;
+          if (curr.x > expectedEnd + gapThreshold) {
+            combinedText += " " + curr.str;
+          } else {
+            combinedText += curr.str;
+          }
+        }
+      }
+
       const maxFontSize = Math.max(...elements.map((el) => el.fontSize));
       reconstructedPageItems.push({
         str: combinedText,
         fontSize: maxFontSize,
         y: lineY,
         x: elements[0].x,
+        width: elements.length > 0
+          ? elements[elements.length - 1].x + elements[elements.length - 1].width - elements[0].x
+          : 0,
       });
     });
 
@@ -204,7 +261,7 @@ export async function parsePdf(file: File): Promise<{ title: string; sections: E
       return true;
     });
 
-    const content = lines.join("\n\n").trim();
+    const content = reconstructParagraphs(lines).trim();
     if (!content && p > 0) continue;
 
     const pageNum = p + 1;

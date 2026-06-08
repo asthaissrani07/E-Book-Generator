@@ -206,6 +206,11 @@ textarea {
 
 @media (min-width: 768px) {
   .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+  .md\:flex { display: flex !important; }
+  .md\:hidden { display: none !important; }
+  .md\:flex-row { flex-direction: row !important; }
+  .md\:w-\[400px\] { width: 400px !important; flex-shrink: 0 !important; }
+  .md\:w-\[420px\] { width: 420px !important; flex-shrink: 0 !important; }
 }
 
 @media (min-width: 1024px) {
@@ -336,6 +341,7 @@ textarea {
   overflow: hidden;
 }
 .whitespace-pre-wrap { white-space: pre-wrap !important; }
+.whitespace-pre-line { white-space: pre-line !important; }
 .text-center { text-align: center !important; }
 
 /* Position, display, overflow */
@@ -512,6 +518,62 @@ button:disabled { opacity: 0.5 !important; cursor: not-allowed !important; }
   --eb-img-radius: 4px;
   --eb-letter-spacing: 0.05em;
   --eb-line-height: 1.7;
+}
+
+/* 5. PINTEREST CLASSIC */
+.theme-pinterest {
+  --eb-bg: #f4ece1;
+  --eb-text: #1a1a1a;
+  --eb-accent: #caa27d;
+  --eb-accent-light: rgba(202, 162, 125, 0.12);
+  --eb-border: rgba(202, 162, 125, 0.25);
+  --eb-font-header: 'Playfair Display', serif;
+  --eb-font-body: 'Lora', serif;
+  --eb-img-radius: 8px;
+  --eb-letter-spacing: 0.015em;
+  --eb-line-height: 1.6;
+}
+
+/* 6. PINTEREST TEAL */
+.theme-pinterest_teal {
+  --eb-bg: #f9fafb;
+  --eb-text: #111827;
+  --eb-accent: #0d9488;
+  --eb-accent-light: rgba(13, 148, 136, 0.1);
+  --eb-border: rgba(13, 148, 136, 0.2);
+  --eb-font-header: 'Montserrat', sans-serif;
+  --eb-font-body: 'Inter', sans-serif;
+  --eb-img-radius: 8px;
+  --eb-letter-spacing: 0.015em;
+  --eb-line-height: 1.65;
+}
+
+/* 7. PINTEREST PINK */
+.theme-pinterest_pink {
+  --eb-bg: #faf8f8;
+  --eb-text: #2d1a21;
+  --eb-accent: #b85a75;
+  --eb-accent-light: rgba(184, 90, 117, 0.1);
+  --eb-border: rgba(184, 90, 117, 0.22);
+  --eb-font-header: 'Playfair Display', serif;
+  --eb-font-body: 'Lora', serif;
+  --eb-img-radius: 8px;
+  --eb-letter-spacing: 0.015em;
+  --eb-line-height: 1.6;
+}
+
+/* 7. PINTEREST PINK */
+.theme-pinterest_pink {
+  --eb-bg: #faf8f8;
+  --eb-text: #2d1a21;
+  --eb-accent: #b85a75;
+  --eb-accent-light: rgba(184, 90, 117, 0.1);
+  --eb-border: rgba(184, 90, 117, 0.22);
+  --eb-font-header: 'Playfair Display', serif;
+  --eb-font-body: 'Lora', serif;
+  --eb-img-radius: 8px;
+  --eb-letter-spacing: 0.015em;
+  --eb-line-height: 1.6;
 }
 
 /* ==========================================================================
@@ -1343,4 +1405,911 @@ body.pdf-exporting #ebook-download-area .ebook-page {
     height: 110px !important;
   }
 }
+
+/* ==========================================================================
+   THEME TYPOGRAPHY OVERRIDES (FONT SIZE MULTIPLIER)
+   ========================================================================== */
+.ebook-page {
+  font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important;
+}
+
+.ebook-h1 {
+  font-size: calc(2.2rem * var(--eb-font-size-mult, 1)) !important;
+}
+
+.ebook-p, .ebook-columns {
+  font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important;
+}
+
+.wl-lead { font-size: calc(0.82rem * var(--eb-font-size-mult, 1)) !important; }
+.wl-columns { font-size: calc(0.72rem * var(--eb-font-size-mult, 1)) !important; }
+.sp-heading { font-size: calc(1.75rem * var(--eb-font-size-mult, 1)) !important; }
+.sp-lead { font-size: calc(0.8rem * var(--eb-font-size-mult, 1)) !important; }
+.sp-columns { font-size: calc(0.7rem * var(--eb-font-size-mult, 1)) !important; }
+.comic-page-title { font-size: calc(1.65rem * var(--eb-font-size-mult, 1)) !important; }
+.comic-body-text { font-size: calc(0.78rem * var(--eb-font-size-mult, 1)) !important; }
+.comic-body-cols { font-size: calc(0.68rem * var(--eb-font-size-mult, 1)) !important; }
+.sporty-heading { font-size: calc(1.4rem * var(--eb-font-size-mult, 1)) !important; }
+.sporty-lead { font-size: calc(0.78rem * var(--eb-font-size-mult, 1)) !important; }
+.sporty-columns { font-size: calc(0.68rem * var(--eb-font-size-mult, 1)) !important; }
+.wellness-heading { font-size: calc(1.2rem * var(--eb-font-size-mult, 1)) !important; }
+.wellness-lead { font-size: calc(0.76rem * var(--eb-font-size-mult, 1)) !important; }
+.wellness-columns { font-size: calc(0.68rem * var(--eb-font-size-mult, 1)) !important; }
+.construct-title { font-size: calc(1.75rem * var(--eb-font-size-mult, 1)) !important; }
+.construct-text { font-size: calc(0.72rem * var(--eb-font-size-mult, 1)) !important; }
+.construct-columns { font-size: calc(0.65rem * var(--eb-font-size-mult, 1)) !important; }
+.nyt-headline { font-size: calc(1.55rem * var(--eb-font-size-mult, 1)) !important; }
+.nyt-deck { font-size: calc(0.78rem * var(--eb-font-size-mult, 1)) !important; }
+.nyt-columns { font-size: calc(0.68rem * var(--eb-font-size-mult, 1)) !important; }
+.warm-title { font-size: calc(2rem * var(--eb-font-size-mult, 1)) !important; }
+.warm-lead { font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important; }
+.warm-body-columns { font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important; }
+
+/* Pinterest Classic Layout overrides */
+.theme-pinterest .pinterest-num { font-size: calc(2.2rem * var(--eb-font-size-mult, 1)) !important; font-family: var(--eb-font-header); font-style: italic; color: var(--eb-accent); }
+.theme-pinterest .layout-cover { padding: 3rem 2rem !important; background-color: var(--eb-bg); text-align: center; }
+.theme-pinterest .layout-cover-images { display: flex; justify-content: center; gap: 0.75rem; margin-bottom: 2rem; }
+.theme-pinterest .layout-cover-circle { width: 90px; height: 90px; border-radius: 50%; overflow: hidden; border: 1.5px solid var(--eb-accent); }
+.theme-pinterest .layout-cover-circle img { width: 100%; height: 100%; object-fit: cover; }
+.theme-pinterest .layout-cover-title { font-family: var(--eb-font-header); font-size: calc(2.8rem * var(--eb-font-size-mult, 1)); font-weight: 700; margin-bottom: 1rem; color: var(--eb-text); }
+.theme-pinterest .layout-cover-desc { font-family: var(--eb-font-body); font-style: italic; font-size: calc(1rem * var(--eb-font-size-mult, 1)); color: var(--eb-accent); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.12em; }
+.theme-pinterest .layout-cover-author { font-family: var(--eb-font-header); font-style: italic; font-size: calc(1.1rem * var(--eb-font-size-mult, 1)); color: var(--eb-text); margin-top: 1rem; }
+
+.theme-pinterest .pinterest-about-container { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2rem; align-items: center; }
+.theme-pinterest .pinterest-dropcap-col { display: flex; justify-content: center; align-items: center; }
+.theme-pinterest .pinterest-dropcap { font-family: var(--eb-font-header); font-size: calc(11rem * var(--eb-font-size-mult, 1)); line-height: 1; font-weight: 400; color: var(--eb-accent); user-select: none; }
+.theme-pinterest .pinterest-about-text { display: flex; flex-direction: column; justify-content: center; }
+.theme-pinterest .pinterest-about-title { font-family: var(--eb-font-header); font-size: calc(2.4rem * var(--eb-font-size-mult, 1)); margin-bottom: 0.25rem; color: var(--eb-text); }
+.theme-pinterest .pinterest-about-kicker { font-family: var(--eb-font-body); font-style: italic; font-size: calc(1rem * var(--eb-font-size-mult, 1)); margin-bottom: 1.5rem; color: var(--eb-accent); }
+
+.theme-pinterest .pinterest-overview-container { display: flex; height: 100%; gap: 1.5rem; }
+.theme-pinterest .pinterest-vertical-sidebar { width: 50px; background-color: var(--eb-accent); color: var(--eb-bg); display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; transform: rotate(180deg); font-family: var(--eb-font-header); font-size: calc(1.8rem * var(--eb-font-size-mult, 1)); letter-spacing: 0.1em; font-weight: 700; flex-shrink: 0; border-radius: 4px; padding: 1.5rem 0; text-transform: uppercase; }
+.theme-pinterest .pinterest-overview-content { flex: 1; display: flex; flex-direction: column; gap: 1.5rem; }
+.theme-pinterest .pinterest-overview-checklist { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.25rem; border-bottom: 1px solid var(--eb-border); padding-bottom: 0.75rem; }
+.theme-pinterest .pinterest-overview-checklist li { font-size: calc(0.75rem * var(--eb-font-size-mult, 1)); font-family: var(--eb-font-body); position: relative; padding-left: 1rem; text-align: left; }
+.theme-pinterest .pinterest-overview-checklist li::before { content: "✓"; position: absolute; left: 0; color: var(--eb-accent); font-weight: bold; }
+.theme-pinterest .pinterest-overview-grid { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 1.25rem; }
+.theme-pinterest .pinterest-overview-block { display: flex; flex-direction: column; }
+.theme-pinterest .pinterest-overview-block-title { font-family: var(--eb-font-header); font-size: calc(0.95rem * var(--eb-font-size-mult, 1)); font-weight: 700; margin-bottom: 0.25rem; color: var(--eb-text); text-align: left; }
+.theme-pinterest .pinterest-overview-block-text { font-family: var(--eb-font-body); font-size: calc(0.7rem * var(--eb-font-size-mult, 1)); line-height: 1.55; text-align: justify; color: var(--eb-text); }
+
+.theme-pinterest .pinterest-step-container { display: flex; flex-direction: column; gap: 1rem; width: 100%; }
+.theme-pinterest .pinterest-step-images { display: flex; justify-content: center; gap: 1rem; }
+.theme-pinterest .pinterest-step-arch-frame { width: 140px; height: 160px; border-radius: 50% 50% 0 0; overflow: hidden; border: 1px solid var(--eb-border); }
+.theme-pinterest .pinterest-step-arch-frame img { width: 100%; height: 100%; object-fit: cover; }
+.theme-pinterest .pinterest-step-band { background-color: var(--eb-accent); color: var(--eb-bg); text-align: center; padding: 0.5rem; font-family: var(--eb-font-header); font-size: calc(1.4rem * var(--eb-font-size-mult, 1)); font-weight: 700; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+.theme-pinterest .pinterest-step-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; padding-top: 1rem; }
+.theme-pinterest .pinterest-step-grid p { font-family: var(--eb-font-body); font-size: calc(0.7rem * var(--eb-font-size-mult, 1)); line-height: 1.5; text-align: justify; margin-bottom: 0.5rem; }
+.theme-pinterest .pinterest-step-grid p::before { display: block; font-family: var(--eb-font-header); font-style: italic; font-size: calc(1.8rem * var(--eb-font-size-mult, 1)); color: var(--eb-accent); opacity: 0.7; text-align: left; }
+.theme-pinterest .pinterest-step-grid p:nth-of-type(1)::before { content: "01"; }
+.theme-pinterest .pinterest-step-grid p:nth-of-type(2)::before { content: "02"; }
+.theme-pinterest .pinterest-step-grid p:nth-of-type(3)::before { content: "03"; }
+.theme-pinterest .pinterest-step-grid p:nth-of-type(4)::before { content: "04"; }
+
+.theme-pinterest .pinterest-qa-container { position: relative; display: flex; flex-direction: column; gap: 1.5rem; width: 100%; }
+.theme-pinterest .pinterest-qa-watermark { position: absolute; top: -1.5rem; left: 50%; transform: translateX(-50%); font-family: var(--eb-font-header); font-size: calc(9rem * var(--eb-font-size-mult, 1)); font-weight: 300; color: var(--eb-accent); opacity: 0.12; z-index: 0; user-select: none; pointer-events: none; }
+.theme-pinterest .pinterest-qa-list { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 1.25rem; }
+.theme-pinterest .pinterest-qa-list p { font-family: var(--eb-font-body); font-size: calc(0.7rem * var(--eb-font-size-mult, 1)); line-height: 1.5; text-align: justify; position: relative; padding-left: 2rem; }
+.theme-pinterest .pinterest-qa-list p::before { position: absolute; left: 0; top: 0; font-family: var(--eb-font-header); font-style: italic; font-size: calc(1.3rem * var(--eb-font-size-mult, 1)); color: var(--eb-accent); }
+.theme-pinterest .pinterest-qa-list p:nth-of-type(1)::before { content: "01"; }
+.theme-pinterest .pinterest-qa-list p:nth-of-type(2)::before { content: "02"; }
+.theme-pinterest .pinterest-qa-list p:nth-of-type(3)::before { content: "03"; }
+.theme-pinterest .pinterest-qa-list p:nth-of-type(4)::before { content: "04"; }
+
+/* Responsive adjustments for tablet */
+@media (max-width: 1024px) {
+  .theme-pinterest .pinterest-about-container { grid-template-columns: 1fr; gap: 1rem; }
+  .theme-pinterest .pinterest-dropcap { font-size: 8rem !important; }
+  .theme-pinterest .pinterest-overview-container { flex-direction: column; }
+  .theme-pinterest .pinterest-vertical-sidebar { width: 100%; height: 40px; writing-mode: horizontal-tb; transform: none; padding: 0.5rem; }
+  .theme-pinterest .pinterest-overview-grid { grid-template-columns: 1fr; }
+  .theme-pinterest .pinterest-step-grid { grid-template-columns: 1fr; }
+}
+
+/* Pinterest Teal Layout overrides */
+.theme-pinterest_teal .pinterest-num { font-size: calc(2.2rem * var(--eb-font-size-mult, 1)) !important; font-family: var(--eb-font-header); font-style: italic; color: var(--eb-accent); }
+
+/* 1. Cover page diagonal split and corporate branding layout */
+.theme-pinterest_teal .layout-cover {
+  position: relative;
+  padding: 0 !important;
+  background-color: #f3f4f6;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.theme-pinterest_teal .pinterest-teal-cover-top {
+  position: relative;
+  height: 55%;
+  width: 100%;
+  background-color: var(--eb-accent);
+  overflow: hidden;
+}
+.theme-pinterest_teal .pinterest-teal-cover-top-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.65;
+  filter: grayscale(20%) contrast(110%);
+}
+.theme-pinterest_teal .pinterest-teal-cover-diagonal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-top: 150px solid white;
+  border-right: 220px solid transparent;
+  z-index: 2;
+}
+.theme-pinterest_teal .pinterest-teal-cover-logo {
+  position: absolute;
+  top: 25px;
+  left: 25px;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.theme-pinterest_teal .pinterest-teal-cover-logo-icon {
+  width: 24px;
+  height: 24px;
+  background-color: var(--eb-accent);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+}
+.theme-pinterest_teal .pinterest-teal-cover-brand {
+  font-family: var(--eb-font-header);
+  font-size: 0.68rem;
+  font-weight: 800;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  line-height: 1.1;
+}
+/* Navy overlay card with rounded left edge */
+.theme-pinterest_teal .pinterest-teal-cover-card {
+  position: absolute;
+  bottom: 25%;
+  right: 0;
+  width: 75%;
+  background-color: #111827;
+  color: white;
+  padding: 2.25rem 1.5rem 2.25rem 2.5rem;
+  border-radius: 9999px 0 0 9999px;
+  box-shadow: -10px 10px 25px rgba(0,0,0,0.15);
+  z-index: 5;
+  border-left: 5px solid white;
+}
+.theme-pinterest_teal .pinterest-teal-cover-subtitle {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.95rem * var(--eb-font-size-mult, 1));
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: white;
+  margin-bottom: 0.4rem;
+  text-transform: uppercase;
+  text-align: left;
+}
+.theme-pinterest_teal .pinterest-teal-cover-title {
+  font-family: var(--eb-font-header);
+  font-size: calc(2.4rem * var(--eb-font-size-mult, 1));
+  font-weight: 800;
+  line-height: 1.15;
+  color: white;
+  text-transform: uppercase;
+  border-bottom: 2px solid white;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+  text-align: left;
+}
+.theme-pinterest_teal .pinterest-teal-cover-desc {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.68rem * var(--eb-font-size-mult, 1));
+  line-height: 1.45;
+  color: #9ca3af;
+  text-align: justify;
+}
+.theme-pinterest_teal .pinterest-teal-cover-bottom {
+  height: 45%;
+  width: 100%;
+  background-color: #f9fafb;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  padding: 2.5rem;
+}
+.theme-pinterest_teal .pinterest-teal-cover-details {
+  border-top: 1.5px solid #d1d5db;
+  padding-top: 0.75rem;
+  width: 180px;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.theme-pinterest_teal .pinterest-teal-cover-web {
+  font-family: var(--eb-font-header);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: 0.05em;
+}
+.theme-pinterest_teal .pinterest-teal-cover-contact {
+  font-family: var(--eb-font-body);
+  font-size: 0.62rem;
+  color: #6b7280;
+  line-height: 1.3;
+}
+
+/* 2. Block Quote / Editorial Layout */
+.theme-pinterest_teal .pinterest-teal-quote-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 2.5rem;
+  text-align: center;
+  position: relative;
+}
+.theme-pinterest_teal .pinterest-teal-quote-marks {
+  font-family: var(--eb-font-header);
+  font-size: calc(6rem * var(--eb-font-size-mult, 1));
+  color: var(--eb-accent);
+  line-height: 0.1;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+.theme-pinterest_teal .pinterest-teal-quote-kicker {
+  font-family: var(--eb-font-header);
+  font-weight: 800;
+  font-size: calc(1.5rem * var(--eb-font-size-mult, 1));
+  color: var(--eb-accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1rem;
+}
+.theme-pinterest_teal .pinterest-teal-quote-text {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.75rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.35;
+  color: #111827;
+  margin-bottom: 2rem;
+  max-width: 90%;
+  text-transform: uppercase;
+}
+.theme-pinterest_teal .pinterest-teal-quote-body {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.85rem * var(--eb-font-size-mult, 1));
+  color: #4b5563;
+  line-height: 1.6;
+  max-width: 85%;
+}
+
+/* 3. Company Message / Split Layout */
+.theme-pinterest_teal .pinterest-teal-msg-container {
+  display: grid;
+  grid-template-columns: 1fr 1.1fr;
+  gap: 2rem;
+  height: 100%;
+  align-items: stretch;
+}
+.theme-pinterest_teal .pinterest-teal-msg-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.theme-pinterest_teal .pinterest-teal-msg-title {
+  font-family: var(--eb-font-header);
+  font-size: calc(2.2rem * var(--eb-font-size-mult, 1));
+  font-weight: 800;
+  color: #111827;
+  text-transform: uppercase;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+}
+.theme-pinterest_teal .pinterest-teal-msg-img-frame {
+  flex: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  background-color: #e5e7eb;
+}
+.theme-pinterest_teal .pinterest-teal-msg-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(100%);
+}
+.theme-pinterest_teal .pinterest-teal-msg-badge {
+  background-color: #111827;
+  color: white;
+  padding: 1rem 1.25rem;
+  border-radius: 0 0 12px 12px;
+  border-top: 4px solid var(--eb-accent);
+}
+.theme-pinterest_teal .pinterest-teal-msg-badge-name {
+  font-family: var(--eb-font-header);
+  font-size: calc(1rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+}
+.theme-pinterest_teal .pinterest-teal-msg-badge-role {
+  font-family: var(--eb-font-body);
+  font-size: 0.68rem;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.theme-pinterest_teal .pinterest-teal-msg-right {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.theme-pinterest_teal .pinterest-teal-msg-quote {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.25rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.4;
+  color: #111827;
+  border-left: 3px solid var(--eb-accent);
+  padding-left: 1rem;
+  margin-bottom: 1.5rem;
+}
+.theme-pinterest_teal .pinterest-teal-msg-body {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.75rem * var(--eb-font-size-mult, 1));
+  line-height: 1.6;
+  color: #4b5563;
+  text-align: justify;
+}
+
+/* 4. Value Banner / Magazine Layout */
+.theme-pinterest_teal .pinterest-teal-val-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  gap: 1.25rem;
+}
+.theme-pinterest_teal .pinterest-teal-val-top-img {
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+}
+.theme-pinterest_teal .pinterest-teal-val-top-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-pinterest_teal .pinterest-teal-val-columns {
+  column-count: 2;
+  column-gap: 1.5rem;
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  line-height: 1.55;
+  color: #4b5563;
+  text-align: justify;
+}
+.theme-pinterest_teal .pinterest-teal-val-banner {
+  background-color: var(--eb-accent);
+  color: white;
+  padding: 1.25rem 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+.theme-pinterest_teal .pinterest-teal-val-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.theme-pinterest_teal .pinterest-teal-val-banner-text {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.15rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.3;
+  text-align: left;
+}
+
+/* 5. Team Profile / Standard Layout */
+.theme-pinterest_teal .pinterest-teal-team-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1.5rem;
+}
+.theme-pinterest_teal .pinterest-teal-team-header {
+  font-family: var(--eb-font-header);
+  font-size: calc(2.2rem * var(--eb-font-size-mult, 1));
+  font-weight: 800;
+  color: #111827;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+.theme-pinterest_teal .pinterest-teal-team-card {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 2rem;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  padding: 1.5rem;
+  border-radius: 20px;
+  align-items: center;
+}
+.theme-pinterest_teal .pinterest-teal-team-photo {
+  height: 160px;
+  border-radius: 14px;
+  overflow: hidden;
+  position: relative;
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+}
+.theme-pinterest_teal .pinterest-teal-team-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-pinterest_teal .pinterest-teal-team-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+.theme-pinterest_teal .pinterest-teal-team-name {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.5rem * var(--eb-font-size-mult, 1));
+  font-weight: 750;
+  color: #111827;
+}
+.theme-pinterest_teal .pinterest-teal-team-role {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.78rem * var(--eb-font-size-mult, 1));
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 0.1rem;
+  margin-bottom: 0.6rem;
+}
+.theme-pinterest_teal .pinterest-teal-team-line {
+  width: 45px;
+  height: 3px;
+  background-color: var(--eb-accent);
+  margin-bottom: 0.75rem;
+}
+.theme-pinterest_teal .pinterest-teal-team-desc {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.7rem * var(--eb-font-size-mult, 1));
+  color: #4b5563;
+  line-height: 1.45;
+}
+.theme-pinterest_teal .pinterest-teal-team-leader-msg {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.1rem * var(--eb-font-size-mult, 1));
+  font-weight: 800;
+  text-transform: uppercase;
+  color: #111827;
+  margin-bottom: 0.5rem;
+  text-align: left;
+}
+.theme-pinterest_teal .pinterest-teal-team-leader-body {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  color: #4b5563;
+  line-height: 1.55;
+  text-align: justify;
+}
+
+@media (max-width: 1024px) {
+  .theme-pinterest_teal .pinterest-teal-msg-container { grid-template-columns: 1fr; gap: 1rem; }
+  .theme-pinterest_teal .pinterest-teal-team-card { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+/* Pinterest Pink Layout overrides */
+.theme-pinterest_pink .pinterest-num { font-size: calc(2.2rem * var(--eb-font-size-mult, 1)) !important; font-family: var(--eb-font-header); font-style: italic; color: var(--eb-accent); }
+
+/* 1. Cover page diagonal pink bottom layout */
+.theme-pinterest_pink .layout-cover {
+  position: relative;
+  padding: 0 !important;
+  background-color: #faf8f8;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+}
+.theme-pinterest_pink .pinterest-pink-cover-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 2rem 2.5rem 0 2.5rem;
+}
+.theme-pinterest_pink .pinterest-pink-cover-subtitle {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.8rem * var(--eb-font-size-mult, 1));
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--eb-accent);
+}
+.theme-pinterest_pink .pinterest-pink-cover-ch {
+  font-family: var(--eb-font-header);
+  font-size: calc(0.95rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.1;
+  text-align: right;
+  border-bottom: 2px solid var(--eb-accent);
+  padding-bottom: 4px;
+}
+.theme-pinterest_pink .pinterest-pink-cover-title-row {
+  padding: 0.5rem 2.5rem;
+  text-align: left;
+}
+.theme-pinterest_pink .pinterest-pink-cover-title {
+  font-family: var(--eb-font-header);
+  font-size: calc(3rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  color: var(--eb-text);
+  line-height: 1.1;
+}
+.theme-pinterest_pink .pinterest-pink-cover-img-frame {
+  flex: 1;
+  margin: 0.5rem 2.5rem;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+.theme-pinterest_pink .pinterest-pink-cover-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-pinterest_pink .pinterest-pink-cover-bottom-split {
+  height: 18%;
+  position: relative;
+  background-color: var(--eb-accent);
+  color: white;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  align-items: center;
+}
+/* Diagonal clip path on the top edge of bottom split */
+.theme-pinterest_pink .pinterest-pink-cover-bottom-split::before {
+  content: '';
+  position: absolute;
+  top: -30px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background-color: var(--eb-accent);
+  clip-path: polygon(0 100%, 100% 0, 100% 100%);
+}
+.theme-pinterest_pink .pinterest-pink-cover-bottom-text {
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.theme-pinterest_pink .pinterest-pink-cover-bottom-num {
+  font-family: var(--eb-font-header);
+  font-size: calc(2.5rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1;
+}
+.theme-pinterest_pink .pinterest-pink-cover-bottom-desc {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  line-height: 1.35;
+  opacity: 0.95;
+  letter-spacing: 0.02em;
+}
+
+/* 2. Checklist / Editorial Layout (Image 2) */
+.theme-pinterest_pink .pinterest-pink-list-container {
+  padding: 2rem;
+  height: 100%;
+  background-color: var(--eb-bg);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.theme-pinterest_pink .pinterest-pink-list-card {
+  width: 100%;
+  height: 100%;
+  background-color: var(--eb-accent);
+  color: white;
+  padding: 2.5rem 2rem;
+  border-radius: 8px;
+  position: relative;
+}
+/* White double border */
+.theme-pinterest_pink .pinterest-pink-list-card::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 6px;
+  pointer-events: none;
+}
+.theme-pinterest_pink .pinterest-pink-list-card::before {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: 13px;
+  right: 13px;
+  bottom: 13px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.theme-pinterest_pink .pinterest-pink-list-content {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  height: 100%;
+  justify-content: center;
+}
+.theme-pinterest_pink .pinterest-pink-list-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.5rem;
+  text-align: left;
+}
+.theme-pinterest_pink .pinterest-pink-list-num {
+  font-family: var(--eb-font-header);
+  font-size: calc(2.2rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1;
+  opacity: 0.85;
+  width: 50px;
+  flex-shrink: 0;
+}
+.theme-pinterest_pink .pinterest-pink-list-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.theme-pinterest_pink .pinterest-pink-list-title {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.15rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+}
+.theme-pinterest_pink .pinterest-pink-list-desc {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.7rem * var(--eb-font-size-mult, 1));
+  line-height: 1.4;
+  opacity: 0.8;
+}
+
+/* 3. About Card / Split Layout (Image 4) */
+.theme-pinterest_pink .pinterest-pink-about-container {
+  height: 100%;
+  background-color: var(--eb-accent-light);
+  padding: 2.25rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.theme-pinterest_pink .pinterest-pink-about-card {
+  background-color: white;
+  width: 90%;
+  height: 95%;
+  border-radius: 12px;
+  border: 1px solid var(--eb-border);
+  padding: 1.75rem 1.5rem;
+  box-shadow: 0 8px 20px rgba(184, 90, 117, 0.06);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  text-align: center;
+}
+.theme-pinterest_pink .pinterest-pink-about-photo {
+  width: 140px;
+  height: 140px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  background-color: #f3f4f6;
+  border: 1px solid #f3e8eb;
+}
+.theme-pinterest_pink .pinterest-pink-about-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-pinterest_pink .pinterest-pink-about-kicker {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  text-transform: uppercase;
+  color: var(--eb-accent);
+  letter-spacing: 0.1em;
+  margin-top: 0.5rem;
+}
+.theme-pinterest_pink .pinterest-pink-about-title {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.8rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  color: var(--eb-text);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+.theme-pinterest_pink .pinterest-pink-about-body {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  line-height: 1.55;
+  color: #4b5563;
+  text-align: justify;
+  margin-bottom: 0.25rem;
+}
+
+/* 4. Overlapping Polaroids / Magazine Layout (Image 5 Right) */
+.theme-pinterest_pink .pinterest-pink-mag-container {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 1.75rem;
+  height: 100%;
+  align-items: center;
+}
+.theme-pinterest_pink .pinterest-pink-mag-left {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.theme-pinterest_pink .pinterest-pink-mag-quote {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.2rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.45;
+  color: var(--eb-accent);
+  border-left: 3px solid var(--eb-accent);
+  padding-left: 0.85rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+.theme-pinterest_pink .pinterest-pink-mag-columns {
+  font-family: var(--eb-font-body);
+  font-size: calc(0.68rem * var(--eb-font-size-mult, 1));
+  line-height: 1.55;
+  color: #4b5563;
+  text-align: justify;
+}
+.theme-pinterest_pink .pinterest-pink-mag-right {
+  position: relative;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.theme-pinterest_pink .pinterest-pink-polaroids {
+  position: relative;
+  width: 100%;
+  height: 80%;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-1 {
+  position: absolute;
+  top: 10%;
+  left: 5%;
+  width: 150px;
+  background-color: var(--eb-accent);
+  padding: 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+  transform: rotate(-6deg);
+  z-index: 1;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-1-img {
+  width: 100%;
+  height: 110px;
+  background-color: white;
+  border-radius: 2px;
+  overflow: hidden;
+  position: relative;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-1-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-1-text {
+  font-family: var(--eb-font-body);
+  font-size: 0.55rem;
+  color: white;
+  margin-top: 0.5rem;
+  line-height: 1.2;
+  text-align: center;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-2 {
+  position: absolute;
+  top: 25%;
+  right: 5%;
+  width: 155px;
+  background-color: white;
+  padding: 0.75rem 0.75rem 1.25rem 0.75rem;
+  border-radius: 4px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+  transform: rotate(5deg);
+  z-index: 2;
+  border: 1px solid #e5e7eb;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-2-img {
+  width: 100%;
+  height: 120px;
+  overflow: hidden;
+  position: relative;
+}
+.theme-pinterest_pink .pinterest-pink-polaroid-2-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 5. Standard Columns / Standard Layout (Image 5 Left) */
+.theme-pinterest_pink .pinterest-pink-std-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  justify-content: center;
+  gap: 1.5rem;
+}
+.theme-pinterest_pink .pinterest-pink-std-quote {
+  font-family: var(--eb-font-header);
+  font-size: calc(1.75rem * var(--eb-font-size-mult, 1));
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--eb-text);
+  text-align: center;
+  font-style: italic;
+  max-width: 90%;
+  margin: 0 auto;
+  padding-bottom: 1rem;
+  border-bottom: 1px dashed var(--eb-border);
+}
+.theme-pinterest_pink .pinterest-pink-std-columns {
+  column-count: 2;
+  column-gap: 1.5rem;
+  font-family: var(--eb-font-body);
+  font-size: calc(0.72rem * var(--eb-font-size-mult, 1));
+  line-height: 1.6;
+  color: #4b5563;
+  text-align: justify;
+}
+
+@media (max-width: 1024px) {
+  .theme-pinterest_pink .pinterest-pink-mag-container { grid-template-columns: 1fr; gap: 1rem; }
+  .theme-pinterest_pink .pinterest-pink-polaroids { height: 250px; }
+}
+
+@media (max-width: 1024px) {
+  .theme-pinterest_teal .pinterest-teal-msg-container { grid-template-columns: 1fr; gap: 1rem; }
+  .theme-pinterest_teal .pinterest-teal-team-card { grid-template-columns: 1fr; gap: 1rem; }
+}
+
+
+
+
 
