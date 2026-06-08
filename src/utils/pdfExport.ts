@@ -291,11 +291,26 @@ export interface PageByPageExportOptions {
   signal?: AbortSignal;
 }
 
+function applyExportCloneStyles(page: HTMLElement): void {
+  page.style.boxShadow = 'none';
+  page.style.transform = 'none';
+  page.style.width = `${PAGE_CSS_WIDTH}px`;
+  page.style.minHeight = `${PAGE_CSS_HEIGHT}px`;
+  page.style.height = 'auto';
+  page.style.maxHeight = 'none';
+  page.style.overflow = 'visible';
+  page.style.setProperty('-webkit-font-smoothing', 'antialiased');
+  page.style.setProperty('text-rendering', 'optimizeLegibility');
+}
+
 async function capturePageElement(
   pageEl: HTMLElement,
   pageNum: number,
   settings: CaptureSettings
-): Promise<{ dataUrl: string; format: 'JPEG' | 'PNG' }> {
+): Promise<{ canvas: HTMLCanvasElement; format: 'JPEG' | 'PNG' }> {
+  const captureWidth = Math.max(pageEl.scrollWidth, pageEl.offsetWidth, PAGE_CSS_WIDTH);
+  const captureHeight = Math.max(pageEl.scrollHeight, pageEl.offsetHeight, PAGE_CSS_HEIGHT);
+
   const canvas = await withTimeout(
     html2canvas(pageEl, {
       scale: settings.scale,
@@ -303,10 +318,10 @@ async function capturePageElement(
       allowTaint: true,
       logging: false,
       backgroundColor: '#ffffff',
-      width: PAGE_CSS_WIDTH,
-      height: PAGE_CSS_HEIGHT,
-      windowWidth: PAGE_CSS_WIDTH,
-      windowHeight: PAGE_CSS_HEIGHT,
+      width: captureWidth,
+      height: captureHeight,
+      windowWidth: captureWidth,
+      windowHeight: captureHeight,
       scrollX: 0,
       scrollY: 0,
       imageTimeout: 8000,
@@ -314,12 +329,7 @@ async function capturePageElement(
         clonedDoc.querySelectorAll('.no-print').forEach((node) => {
           (node as HTMLElement).style.display = 'none';
         });
-        const page = clonedPage as HTMLElement;
-        page.style.boxShadow = 'none';
-        page.style.transform = 'none';
-        page.style.width = `${PAGE_CSS_WIDTH}px`;
-        page.style.minHeight = `${PAGE_CSS_HEIGHT}px`;
-        page.style.setProperty('-webkit-font-smoothing', 'antialiased');
+        applyExportCloneStyles(clonedPage as HTMLElement);
       },
     }),
     settings.pageTimeoutMs,
@@ -330,8 +340,49 @@ async function capturePageElement(
     throw new Error(`Page ${pageNum} capture produced an empty canvas`);
   }
 
-  const dataUrl = await canvasToDataUrl(canvas, settings.imageFormat, settings.jpegQuality);
-  return { dataUrl, format: settings.imageFormat };
+  return { canvas, format: settings.imageFormat };
+}
+
+const PDF_W_MM = 210;
+const PDF_H_MM = 297;
+
+/** Slice a tall capture into full A4 pages so nothing is clipped at the bottom. */
+async function addCanvasToPdf(
+  doc: jsPDF,
+  canvas: HTMLCanvasElement,
+  format: 'JPEG' | 'PNG',
+  jpegQuality: number,
+  isFirstPdfPage: { value: boolean }
+): Promise<void> {
+  const pxPerMm = canvas.width / PDF_W_MM;
+  const sliceHeightPx = Math.max(1, Math.round(PDF_H_MM * pxPerMm));
+
+  let srcY = 0;
+  while (srcY < canvas.height) {
+    if (!isFirstPdfPage.value) {
+      doc.addPage();
+    }
+    isFirstPdfPage.value = false;
+
+    const remaining = canvas.height - srcY;
+    const drawH = Math.min(sliceHeightPx, remaining);
+
+    const sliceCanvas = document.createElement('canvas');
+    sliceCanvas.width = canvas.width;
+    sliceCanvas.height = sliceHeightPx;
+    const ctx = sliceCanvas.getContext('2d');
+    if (!ctx) {
+      throw new Error('Canvas slice failed');
+    }
+
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, sliceCanvas.width, sliceCanvas.height);
+    ctx.drawImage(canvas, 0, srcY, canvas.width, drawH, 0, 0, canvas.width, drawH);
+
+    const dataUrl = await canvasToDataUrl(sliceCanvas, format, jpegQuality);
+    doc.addImage(dataUrl, format, 0, 0, PDF_W_MM, PDF_H_MM);
+    srcY += sliceHeightPx;
+  }
 }
 
 /**
@@ -347,7 +398,7 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
 
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
   let failedPages = 0;
-  let isFirstPage = true;
+  const isFirstPdfPage = { value: true };
 
   for (let i = 0; i < totalPages; i++) {
     if (signal?.aborted) {
@@ -356,7 +407,7 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
 
     onProgress?.(i + 1, totalPages);
 
-    let pageCapture: { dataUrl: string; format: 'JPEG' | 'PNG' } | null = null;
+    let pageCapture: { canvas: HTMLCanvasElement; format: 'JPEG' | 'PNG' } | null = null;
 
     try {
       await onRenderPage(i);
@@ -366,20 +417,27 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
 
       const pageEl = await waitForPageElement(getPageElement);
       await waitForExportImages(pageEl, settings.imageWaitMs);
+      await waitForNextPaint();
+      await yieldToBrowser(60);
       pageCapture = await capturePageElement(pageEl, i + 1, settings);
     } catch (pageErr) {
       failedPages++;
       console.warn(`PDF export skipped page ${i + 1}:`, pageErr);
     }
 
-    if (!isFirstPage) {
-      doc.addPage();
-    }
-    isFirstPage = false;
-
     if (pageCapture) {
-      doc.addImage(pageCapture.dataUrl, pageCapture.format, 0, 0, 210, 297);
+      await addCanvasToPdf(
+        doc,
+        pageCapture.canvas,
+        pageCapture.format,
+        settings.jpegQuality,
+        isFirstPdfPage
+      );
     } else {
+      if (!isFirstPdfPage.value) {
+        doc.addPage();
+      }
+      isFirstPdfPage.value = false;
       doc.setFontSize(14);
       doc.setTextColor(40, 40, 40);
       doc.text(`Page ${i + 1}`, 20, 30);
