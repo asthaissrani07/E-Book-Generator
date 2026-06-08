@@ -1199,22 +1199,8 @@ body.pdf-exporting #ebook-download-wrapper {
 
 /* During export always use desktop A4 layout (ignore mobile breakpoints) */
 body.pdf-exporting #ebook-download-area .ebook-page {
-  padding: 3.5rem !important;
   min-height: 842px !important;
   height: 842px !important;
-  font-size: 1.05rem !important;
-}
-
-body.pdf-exporting #ebook-download-area .sp-row {
-  display: grid !important;
-  grid-template-columns: 0.85fr 1.15fr !important;
-}
-
-body.pdf-exporting #ebook-download-area .sp-columns,
-body.pdf-exporting #ebook-download-area .warm-body-columns,
-body.pdf-exporting #ebook-download-area .wellness-columns,
-body.pdf-exporting #ebook-download-area .layout-magazine .ebook-columns {
-  column-count: 2 !important;
 }
 
 /* Page break formatting for pdf download and print */
@@ -1277,82 +1263,82 @@ body.pdf-exporting #ebook-download-area .layout-magazine .ebook-columns {
    MOBILE & TABLET RESPONSIVE OVERRIDES
    ========================================================================== */
 @media (max-width: 1024px) {
-  .ebook-page {
+  body:not(.pdf-exporting) .ebook-page {
     padding: 2rem !important;
     min-height: 600px !important;
   }
   
-  .ebook-h1 {
+  body:not(.pdf-exporting) .ebook-h1 {
     font-size: 1.8rem !important;
     margin-bottom: 1rem !important;
   }
   
-  .layout-cover {
+  body:not(.pdf-exporting) .layout-cover {
     padding: 2.5rem !important;
   }
   
-  .layout-cover .ebook-h1 {
+  body:not(.pdf-exporting) .layout-cover .ebook-h1 {
     font-size: 2.2rem !important;
     margin-bottom: 1.5rem !important;
   }
   
-  .layout-cover .ebook-subtitle {
+  body:not(.pdf-exporting) .layout-cover .ebook-subtitle {
     margin-bottom: 2rem !important;
   }
   
-  .layout-cover .ebook-cover-image {
+  body:not(.pdf-exporting) .layout-cover .ebook-cover-image {
     width: 140px !important;
     height: 140px !important;
     margin-bottom: 1.5rem !important;
   }
   
-  .layout-split-grid {
+  body:not(.pdf-exporting) .layout-split-grid {
     grid-template-columns: 1fr !important;
     gap: 1.5rem !important;
   }
   
-  .ebook-image-frame img {
+  body:not(.pdf-exporting) .ebook-image-frame img {
     height: 200px !important;
   }
   
-  .layout-magazine .ebook-columns,
-  .warm-body-columns {
+  body:not(.pdf-exporting) .layout-magazine .ebook-columns,
+  body:not(.pdf-exporting) .warm-body-columns {
     column-count: 1 !important;
   }
 
-  .warm-hero-row {
+  body:not(.pdf-exporting) .warm-hero-row {
     grid-template-columns: 1fr !important;
   }
 
-  .warm-gallery-row {
+  body:not(.pdf-exporting) .warm-gallery-row {
     grid-template-columns: 1fr 1fr !important;
   }
 
-  .warm-watermark {
+  body:not(.pdf-exporting) .warm-watermark {
     font-size: 3.5rem !important;
   }
 }
 
 @media (max-width: 640px) {
-  .ebook-page {
+  body:not(.pdf-exporting) .ebook-page {
     padding: 1.5rem !important;
     min-height: 480px !important;
     font-size: 0.95rem !important;
   }
   
-  .ebook-h1 {
+  body:not(.pdf-exporting) .ebook-h1 {
     font-size: 1.5rem !important;
   }
   
-  .layout-cover {
+  body:not(.pdf-exporting) .layout-cover {
     padding: 1.5rem !important;
   }
   
-  .layout-cover .ebook-h1 {
+  body:not(.pdf-exporting) .layout-cover .ebook-h1 {
     font-size: 1.8rem !important;
   }
   
-  .layout-cover .ebook-cover-image {
+  body:not(.pdf-exporting) .layout-cover .ebook-cover-image {
     width: 110px !important;
     height: 110px !important;
   }
