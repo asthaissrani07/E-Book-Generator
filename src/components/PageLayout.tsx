@@ -23,6 +23,8 @@ interface PageLayoutProps {
   isActive: boolean;
   /** When true, load all images immediately for PDF export capture. */
   pdfExportMode?: boolean;
+  drawMode?: boolean;
+  drawColor?: string;
 }
 
 export const PageLayout: React.FC<PageLayoutProps> = ({
@@ -37,6 +39,8 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
   isGeneratingImage,
   isActive,
   pdfExportMode = false,
+  drawMode = false,
+  drawColor = '#e91e8c',
 }) => {
   const [showPromptEditor, setShowPromptEditor] = useState(false);
   const [promptText, setPromptText] = useState(section.imagePrompt);
@@ -126,7 +130,7 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     if (!editable) return;
 
     if (color === '') {
-      document.execCommand('removeFormat', false);
+      document.execCommand('backColor', false, 'transparent');
     } else {
       document.execCommand('backColor', false, color);
     }
@@ -431,11 +435,89 @@ export const PageLayout: React.FC<PageLayoutProps> = ({
     shouldShowImage
   ]);
 
+  // SVG Pen Drawing Logic
+  const [currentPath, setCurrentPath] = useState<string>('');
+  const isDrawingRef = useRef<boolean>(false);
+
+  const getSVGCoords = (e: React.MouseEvent<SVGSVGElement>): { x: number; y: number } => {
+    const svg = e.currentTarget;
+    const rect = svg.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 595;
+    const y = ((e.clientY - rect.top) / rect.height) * 842;
+    return { x, y };
+  };
+
+  const handleDrawMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    e.preventDefault();
+    isDrawingRef.current = true;
+    const { x, y } = getSVGCoords(e);
+    setCurrentPath(`M ${x.toFixed(1)} ${y.toFixed(1)}`);
+  };
+
+  const handleDrawMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isDrawingRef.current) return;
+    const { x, y } = getSVGCoords(e);
+    setCurrentPath((prev) => `${prev} L ${x.toFixed(1)} ${y.toFixed(1)}`);
+  };
+
+  const handleDrawMouseUp = () => {
+    if (!isDrawingRef.current) return;
+    isDrawingRef.current = false;
+    if (currentPath) {
+      const newDrawLine = {
+        points: currentPath,
+        color: drawColor,
+        width: 3,
+      };
+      onUpdateSection({
+        ...section,
+        drawings: [...(section.drawings || []), newDrawLine],
+      });
+      setCurrentPath('');
+    }
+  };
+
   return (
     <div
       id={`page-container-${pageIndex}`}
       className={`ebook-page layout-${section.layout} group relative ${isActive ? 'active-page-ring' : ''} ${pdfExportMode ? 'pdf-export-page' : ''} ${section.layout === 'cover' ? `theme-${selectedTheme}` : ''}`}
     >
+      {/* Interactive SVG drawings markup layer */}
+      <svg
+        className="absolute inset-0 w-full h-full"
+        style={{
+          zIndex: 15,
+          pointerEvents: drawMode ? 'auto' : 'none',
+          cursor: drawMode ? 'crosshair' : 'default',
+        }}
+        viewBox="0 0 595 842"
+        onMouseDown={drawMode ? handleDrawMouseDown : undefined}
+        onMouseMove={drawMode ? handleDrawMouseMove : undefined}
+        onMouseUp={drawMode ? handleDrawMouseUp : undefined}
+        onMouseLeave={drawMode ? handleDrawMouseUp : undefined}
+      >
+        {(section.drawings || []).map((line, idx) => (
+          <path
+            key={idx}
+            d={line.points}
+            stroke={line.color}
+            strokeWidth={line.width}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        ))}
+        {currentPath && (
+          <path
+            d={currentPath}
+            stroke={drawColor}
+            strokeWidth={3}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        )}
+      </svg>
       {/* Floating Toolbar for Highlights & Formatting */}
       {showToolbar && !pdfExportMode && (
         <div

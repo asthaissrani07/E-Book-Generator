@@ -36,6 +36,38 @@ function App() {
   const [isParsing, setIsParsing] = useState(false);
   const [parseError, setParseError] = useState<string | null>(null);
 
+  // Undo/Redo History States
+  const [past, setPast] = useState<EbookSection[][]>([]);
+  const [future, setFuture] = useState<EbookSection[][]>([]);
+
+  const updateSections = (newSections: EbookSection[]) => {
+    if (JSON.stringify(newSections) !== JSON.stringify(sections)) {
+      setPast(prev => [...prev, sections]);
+      setFuture([]);
+      setSections(newSections);
+    }
+  };
+
+  const handleUndo = () => {
+    if (past.length === 0) return;
+    const previous = past[past.length - 1];
+    const newPast = past.slice(0, past.length - 1);
+
+    setPast(newPast);
+    setFuture(prev => [sections, ...prev]);
+    setSections(previous);
+  };
+
+  const handleRedo = () => {
+    if (future.length === 0) return;
+    const next = future[0];
+    const newFuture = future.slice(1);
+
+    setPast(prev => [...prev, sections]);
+    setFuture(newFuture);
+    setSections(next);
+  };
+
   // Load Groq configuration strictly from the local environment variable
   const groqConfig: GroqConfig = {
     apiKey: import.meta.env.VITE_GROQ_API_KEY || '',
@@ -254,6 +286,8 @@ function App() {
       const result = await parsePdf(file);
       setBookTitle(result.title);
       setSections(ensureSectionImageUrls(result.sections, result.title));
+      setPast([]);
+      setFuture([]);
       setActivePageIndex(0);
       setIsDashboardVisible(true);
       setActiveMobileView('controls');
@@ -307,6 +341,8 @@ function App() {
 
     setBookTitle(title);
     setSections(ensureSectionImageUrls(demoSections, title));
+    setPast([]);
+    setFuture([]);
     setActivePageIndex(0);
     setIsDashboardVisible(true);
     setActiveMobileView('controls');
@@ -316,13 +352,13 @@ function App() {
   const handleUpdateSection = (index: number, updated: EbookSection) => {
     const copy = [...sections];
     copy[index] = updated;
-    setSections(copy);
+    updateSections(copy);
   };
 
   const handleDeleteSection = (index: number) => {
     if (sections.length <= 1) return;
     const copy = sections.filter((_, idx) => idx !== index);
-    setSections(copy);
+    updateSections(copy);
     if (activePageIndex >= copy.length) {
       setActivePageIndex(copy.length - 1);
     }
@@ -341,7 +377,7 @@ function App() {
       showImage: true,
       layout: 'editorial',
     };
-    setSections([...sections, newSection]);
+    updateSections([...sections, newSection]);
     setActivePageIndex(sections.length);
   };
 
@@ -406,7 +442,7 @@ function App() {
           showImage: true,
         };
       }
-      setSections(ensureSectionImageUrls(updatedSections, bookTitle));
+      updateSections(ensureSectionImageUrls(updatedSections, bookTitle));
       alert(`Successfully styled ${sections.length} page(s) using AI!`);
     } catch (err: any) {
       console.error(err);
@@ -533,8 +569,8 @@ function App() {
           <button
             onClick={() => setActiveMobileView('controls')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeMobileView === 'controls'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
               }`}
           >
             Dashboard
@@ -542,8 +578,8 @@ function App() {
           <button
             onClick={() => setActiveMobileView('preview')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeMobileView === 'preview'
-                ? 'bg-indigo-600 text-white shadow-md'
-                : 'text-slate-400 hover:text-slate-200'
+              ? 'bg-indigo-600 text-white shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
               }`}
           >
             Preview
@@ -624,6 +660,12 @@ function App() {
             // Dashboard toggle actions
             isDashboardVisible={isDashboardVisible}
             onToggleDashboard={() => setIsDashboardVisible(!isDashboardVisible)}
+
+            // Undo/Redo integration
+            onUndo={handleUndo}
+            onRedo={handleRedo}
+            canUndo={past.length > 0}
+            canRedo={future.length > 0}
           />
 
           {/* Progress Overlay during AI styling */}
@@ -662,10 +704,10 @@ function App() {
         id="ebook-download-wrapper"
         style={{
           position: 'fixed',
-          left: 0,
+          left: -9999,
           top: 0,
           width: 595,
-          zIndex: 1,
+          zIndex: -9999,
           pointerEvents: 'none',
           visibility: pdfExportPageIndex !== null ? 'visible' : 'hidden',
         }}

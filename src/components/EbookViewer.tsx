@@ -14,10 +14,7 @@ import {
   ChevronRight,
   LayoutGrid,
   Grid,
-  Image as ImageIcon,
   Type,
-  Smile,
-  PenTool,
   Table,
   MessageSquare,
   Sliders,
@@ -25,7 +22,8 @@ import {
   Undo2,
   Redo2,
   Bot,
-  Layers
+  Layers,
+  Highlighter
 } from 'lucide-react';
 
 interface EbookViewerProps {
@@ -65,6 +63,12 @@ interface EbookViewerProps {
   // Dashboard Toggle Actions
   isDashboardVisible: boolean;
   onToggleDashboard: () => void;
+
+  // Undo/Redo Props
+  onUndo: () => void;
+  onRedo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export const EbookViewer: React.FC<EbookViewerProps> = ({
@@ -103,6 +107,12 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
 
   isDashboardVisible,
   onToggleDashboard,
+
+  // Undo/Redo props
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
 }) => {
   const [viewMode, setViewMode] = useState<'single' | 'spread' | 'grid'>('single');
   const [zoom, setZoom] = useState<number>(75);
@@ -110,9 +120,8 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
   const [isPagesPanelOpen, setIsPagesPanelOpen] = useState<boolean>(true);
   const [dottedGrid, setDottedGrid] = useState<boolean>(true);
   const [dimensions, setDimensions] = useState<'letter' | 'a4' | 'legal'>('a4');
-  const [stickersOpen, setStickersOpen] = useState<boolean>(false);
-  const [drawMode, setDrawMode] = useState<boolean>(false);
-  const [drawColor, setDrawColor] = useState<string>('#e91e8c');
+  const [highlightOpen, setHighlightOpen] = useState<boolean>(false);
+  const [activeHighlightColor, setActiveHighlightColor] = useState<string>('#fef08a');
 
   // AI chat states
   const [chatInput, setChatInput] = useState<string>('');
@@ -263,20 +272,38 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
     });
   };
 
-  const addStickerToActivePage = (stickerText: string) => {
+  const addTextBoxToActivePage = () => {
     const activeSection = sections[activePageIndex];
     if (!activeSection) return;
 
-    const stickerHtml = `
-<span class="inline-block px-3 py-1 bg-amber-100 border border-amber-300 text-amber-800 text-[10px] font-bold uppercase tracking-wider rounded-xl select-none" style="transform: rotate(-3deg); margin: 0.5rem 0.25rem;">
-  ${stickerText}
-</span>
-`;
+    const textBoxHtml = `\n<div class="eb-textbox">New Text Box (Click to edit)</div>`;
     onUpdateSection(activePageIndex, {
       ...activeSection,
-      content: activeSection.content + '\n' + stickerHtml
+      content: activeSection.content + textBoxHtml
     });
-    setStickersOpen(false);
+  };
+
+  const applyHighlight = (color: string) => {
+    setActiveHighlightColor(color);
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed) {
+      if (color === '') {
+        document.execCommand('backColor', false, 'transparent');
+      } else {
+        document.execCommand('backColor', false, color);
+      }
+    }
+  };
+
+  const addCommentToActivePage = () => {
+    const activeSection = sections[activePageIndex];
+    if (!activeSection) return;
+
+    const commentHtml = `\n<div class="eb-comment"><strong style="color: var(--eb-accent, #7c3aed); font-size: 0.75rem; text-transform: uppercase; display: block; margin-bottom: 2px;">Comment Note</strong>Click to type note...</div>`;
+    onUpdateSection(activePageIndex, {
+      ...activeSection,
+      content: activeSection.content + commentHtml
+    });
   };
 
   const renderPage = (section: EbookSection, idx: number) => {
@@ -411,7 +438,7 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
       </header>
 
       {/* 2. CUSTOMIZATION TOOLBAR */}
-      <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 border-b border-slate-200 shrink-0 overflow-x-auto no-scrollbar z-20 no-print">
+      <div className="flex items-center gap-3 px-4 py-2 bg-slate-50 border-b border-slate-200 shrink-0 overflow-visible z-20 no-print">
         <button
           onClick={onAddSection}
           className="p-1.5 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg text-slate-700 hover:text-slate-900 transition flex items-center gap-1 shadow-sm text-[11px] font-semibold"
@@ -425,10 +452,20 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
 
         {/* Undo/Redo */}
         <div className="flex bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden shrink-0">
-          <button className="p-1.5 text-slate-400 hover:text-slate-600 transition" title="Undo">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            className={`p-1.5 transition ${canUndo ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-50' : 'text-slate-300 cursor-not-allowed'}`}
+            title="Undo"
+          >
             <Undo2 size={13} />
           </button>
-          <button className="p-1.5 text-slate-400 hover:text-slate-600 transition border-l border-slate-100" title="Redo">
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            className={`p-1.5 transition border-l border-slate-100 ${canRedo ? 'text-slate-700 hover:text-slate-900 hover:bg-slate-50' : 'text-slate-300 cursor-not-allowed'}`}
+            title="Redo"
+          >
             <Redo2 size={13} />
           </button>
         </div>
@@ -505,63 +542,58 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
         {/* Insert Shortcuts */}
         <div className="flex bg-white rounded-lg border border-slate-200 shadow-sm p-0.5 shrink-0 relative">
           <button
-            onClick={() => setActiveRightSidebarTab('details')}
-            className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition"
-            title="Insert Illustration"
-          >
-            <ImageIcon size={13} />
-          </button>
-          <button
-            onClick={() => setActiveRightSidebarTab('details')}
+            onClick={addTextBoxToActivePage}
             className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition"
             title="Insert Text Box"
           >
             <Type size={13} />
           </button>
 
-          {/* Sticker picker */}
+          {/* Highlight Tool */}
           <div className="relative">
             <button
-              onClick={() => setStickersOpen(!stickersOpen)}
-              className={`p-1.5 rounded transition ${stickersOpen ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
-              title="Add Sticker Deco"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setHighlightOpen(!highlightOpen);
+                const sel = window.getSelection();
+                if (sel && !sel.isCollapsed) {
+                  document.execCommand('backColor', false, activeHighlightColor);
+                }
+              }}
+              className={`p-1.5 rounded transition ${highlightOpen ? 'bg-slate-100 text-slate-900' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
+              title="Highlight Tool"
             >
-              <Smile size={13} />
+              <Highlighter size={13} style={{ color: activeHighlightColor }} />
             </button>
-            {stickersOpen && (
-              <div className="absolute top-8 left-0 bg-white border border-slate-200 p-2.5 rounded-xl shadow-xl z-50 flex flex-wrap gap-1.5 w-48 text-[10px] animate-fade-in font-semibold">
-                {['Cosmos', 'Artistic', 'Explore', 'Wellness', 'Organic', 'Shapes', 'POW!'].map(st => (
+            {highlightOpen && (
+              <div 
+                className="absolute top-8 left-0 bg-white border border-slate-200 p-2 rounded-xl shadow-xl z-50 flex items-center gap-1.5 animate-fade-in"
+                onMouseDown={(e) => e.preventDefault()}
+              >
+                {[
+                  { color: '#fef08a', name: 'Yellow' },
+                  { color: '#bbf7d0', name: 'Green' },
+                  { color: '#fbcfe8', name: 'Pink' },
+                  { color: '#bfdbfe', name: 'Blue' },
+                  { color: '#fed7aa', name: 'Orange' },
+                ].map((swatch) => (
                   <button
-                    key={st}
-                    onClick={() => addStickerToActivePage(st)}
-                    className="px-2 py-1 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded text-slate-600 cursor-pointer"
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Draw mode */}
-          <div className="relative">
-            <button
-              onClick={() => setDrawMode(!drawMode)}
-              className={`p-1.5 rounded transition ${drawMode ? 'bg-slate-900 text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'}`}
-              title="Toggle Pen tool"
-            >
-              <PenTool size={13} />
-            </button>
-            {drawMode && (
-              <div className="absolute top-8 left-0 bg-white border border-slate-200 p-2 rounded-lg shadow-xl z-50 flex items-center gap-1">
-                {['#e91e8c', '#ff6b35', '#00b4d8', '#ffd700', '#22c55e'].map(col => (
-                  <button
-                    key={col}
-                    onClick={() => setDrawColor(col)}
-                    className="w-3.5 h-3.5 rounded-full border border-black/10"
-                    style={{ backgroundColor: col, outline: drawColor === col ? '1.5px solid #000' : 'none' }}
+                    key={swatch.color}
+                    type="button"
+                    onClick={() => applyHighlight(swatch.color)}
+                    className="w-4.5 h-4.5 rounded-full border border-slate-300 shadow-inner hover:scale-110 transition cursor-pointer flex-shrink-0"
+                    style={{ backgroundColor: swatch.color, outline: activeHighlightColor === swatch.color ? '1.5px solid #000' : 'none' }}
+                    title={`Highlight ${swatch.name}`}
                   />
                 ))}
+                <button
+                  type="button"
+                  onClick={() => applyHighlight('')}
+                  className="px-2 py-1 bg-slate-50 border border-slate-200 hover:bg-slate-100 rounded text-[9px] text-slate-600 font-bold cursor-pointer flex-shrink-0 ml-1 transition"
+                  title="Clear Highlight"
+                >
+                  Unhighlight
+                </button>
               </div>
             )}
           </div>
@@ -574,9 +606,9 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
             <Table size={13} />
           </button>
           <button
-            onClick={() => setActiveRightSidebarTab('chat')}
+            onClick={addCommentToActivePage}
             className="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded transition"
-            title="Add Comment"
+            title="Insert Comment Note"
           >
             <MessageSquare size={13} />
           </button>
@@ -658,6 +690,8 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
                           onRegenerateImage={async () => { }}
                           isGeneratingImage={false}
                           isActive={false}
+                          drawMode={false}
+                          drawColor="#000"
                         />
                       </div>
                     </div>
@@ -1012,6 +1046,8 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
               onRegenerateImage={async () => { }}
               isGeneratingImage={false}
               isActive={true}
+              drawMode={false}
+              drawColor="#000"
             />
           )}
         </div>

@@ -622,3 +622,35 @@
 .bloodred-body-lead { font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important; }
 .bloodred-body-cols { font-size: calc(0.85rem * var(--eb-font-size-mult, 1)) !important; }
 
+/* Custom Text Box style */
+.eb-textbox {
+  border: 2px dashed var(--eb-accent, #7c3aed);
+  padding: 1rem;
+  margin: 1rem 0;
+  border-radius: 8px;
+  background-color: var(--eb-accent-light, rgba(124, 58, 237, 0.05));
+  min-height: 50px;
+  color: var(--eb-text, inherit);
+  font-family: var(--eb-font-body), sans-serif;
+  transition: border-color var(--transition-fast, 0.15s) ease, background-color var(--transition-fast, 0.15s) ease;
+}
+.eb-textbox:focus {
+  border-color: var(--eb-accent, #7c3aed);
+  outline: none;
+  background-color: var(--eb-accent-light, rgba(124, 58, 237, 0.08));
+}
+
+/* Custom Comment Box style */
+.eb-comment {
+  border-left: 4px solid var(--eb-accent, #7c3aed);
+  padding: 0.75rem 1rem;
+  margin: 1rem 0;
+  border-radius: 4px;
+  background-color: var(--eb-accent-light, rgba(124, 58, 237, 0.05));
+  color: var(--eb-text, inherit);
+  font-family: var(--eb-font-body), sans-serif;
+  font-size: 0.9rem;
+}
+
+
+

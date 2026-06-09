@@ -59,6 +59,8 @@ export interface EbookSection {
   showImage?: boolean;
   /** Additional editorial/newspaper images for multi-photo spreads. */
   extraImageUrls?: string[];
+  /** Vector drawings on the page canvas. */
+  drawings?: Array<{ points: string; color: string; width: number }>;
 }
 
 function looksLikeChapterHeading(text: string): boolean {

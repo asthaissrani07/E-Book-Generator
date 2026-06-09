@@ -59,10 +59,10 @@ export function prepareElementForPdfCapture(element: HTMLElement): () => void {
     wrapper.removeAttribute('aria-hidden');
     wrapper.style.cssText = [
       'position:fixed',
-      'left:0',
+      'left:-9999px',
       'top:0',
       `width:${PAGE_CSS_WIDTH}px`,
-      'z-index:9000',
+      'z-index:-9999',
       'pointer-events:none',
       'overflow:visible',
       'opacity:1',
@@ -468,7 +468,9 @@ async function renderPageCanvas(
   pageNum: number,
   settings: CaptureSettings,
   exportScale: number,
-  useForeignObject: boolean
+  useForeignObject: boolean,
+  windowWidth: number,
+  windowHeight: number
 ): Promise<HTMLCanvasElement> {
   return withTimeout(
     html2canvas(pageEl, {
@@ -479,8 +481,8 @@ async function renderPageCanvas(
       backgroundColor: '#ffffff',
       width: PAGE_CSS_WIDTH,
       height: PAGE_CSS_HEIGHT,
-      windowWidth: PAGE_CSS_WIDTH,
-      windowHeight: PAGE_CSS_HEIGHT,
+      windowWidth,
+      windowHeight,
       scrollX: 0,
       scrollY: 0,
       imageTimeout: 8000,
@@ -489,6 +491,11 @@ async function renderPageCanvas(
         clonedDoc.querySelectorAll('.no-print').forEach((node) => {
           (node as HTMLElement).style.display = 'none';
         });
+        const clonedWrapper = clonedDoc.getElementById('ebook-download-wrapper');
+        if (clonedWrapper) {
+          clonedWrapper.style.left = '0';
+          clonedWrapper.style.zIndex = '9000';
+        }
         applyExportCloneStyles(clonedPage as HTMLElement, exportScale);
       },
     }),
@@ -504,12 +511,14 @@ async function capturePageElement(
   exportScale: number
 ): Promise<{ canvas: HTMLCanvasElement; format: 'JPEG' | 'PNG' }> {
   let canvas: HTMLCanvasElement;
+  const windowWidth = pageEl.offsetWidth || PAGE_CSS_WIDTH;
+  const windowHeight = pageEl.offsetHeight || PAGE_CSS_HEIGHT;
 
   try {
-    canvas = await renderPageCanvas(pageEl, pageNum, settings, exportScale, true);
+    canvas = await renderPageCanvas(pageEl, pageNum, settings, exportScale, true, windowWidth, windowHeight);
   } catch (foreignObjectErr) {
     console.warn(`Page ${pageNum}: foreignObject capture failed, retrying…`, foreignObjectErr);
-    canvas = await renderPageCanvas(pageEl, pageNum, settings, exportScale, false);
+    canvas = await renderPageCanvas(pageEl, pageNum, settings, exportScale, false, windowWidth, windowHeight);
   }
 
   if (canvas.width < 100 || canvas.height < 100) {
@@ -571,11 +580,25 @@ export async function exportStyledEbookPdf(options: PageByPageExportOptions): Pr
       await waitForNextPaint();
       await waitForNextPaint();
       await yieldToBrowser(settings.yieldMs);
+      if (i === 0) {
+        await yieldToBrowser(350); // Extra delay specifically for the cover page
+      }
 
       const pageEl = await waitForPageElement(getPageElement);
       await waitForExportImages(pageEl, settings.imageWaitMs);
       await waitForNextPaint();
       await yieldToBrowser(60);
+
+      // Stabilize scrollHeight by checking twice with a 100ms gap
+      let prevHeight = pageEl.scrollHeight;
+      for (let attempt = 0; attempt < 30; attempt++) {
+        await yieldToBrowser(100);
+        const currHeight = pageEl.scrollHeight;
+        if (currHeight === prevHeight) {
+          break;
+        }
+        prevHeight = currHeight;
+      }
 
       const { restore: restoreFit, scale: exportScale } = fitPageForExport(pageEl);
       await waitForNextPaint();
