@@ -42,12 +42,61 @@ function App() {
   };
 
   const [selectedTheme, setSelectedTheme] = useState<ThemeId>('editorial');
-  const [customBgColor, setCustomBgColor] = useState('');
-  const [customTextColor, setCustomTextColor] = useState('');
-  const [customAccentColor, setCustomAccentColor] = useState('');
-  const [customFontHeader, setCustomFontHeader] = useState('');
-  const [customFontBody, setCustomFontBody] = useState('');
-  const [customFontSizeMult, setCustomFontSizeMult] = useState(1.0);
+
+  // Storing theme overrides per theme
+  const [themeOverrides, setThemeOverrides] = useState<Partial<Record<ThemeId, {
+    bgColor?: string;
+    textColor?: string;
+    accentColor?: string;
+    fontHeader?: string;
+    fontBody?: string;
+    fontSizeMult?: number;
+  }>>>({});
+
+  const customBgColor = themeOverrides[selectedTheme]?.bgColor ?? '';
+  const customTextColor = themeOverrides[selectedTheme]?.textColor ?? '';
+  const customAccentColor = themeOverrides[selectedTheme]?.accentColor ?? '';
+  const customFontHeader = themeOverrides[selectedTheme]?.fontHeader ?? '';
+  const customFontBody = themeOverrides[selectedTheme]?.fontBody ?? '';
+  const customFontSizeMult = themeOverrides[selectedTheme]?.fontSizeMult ?? 1.0;
+
+  const setCustomBgColor = (color: string) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], bgColor: color }
+    }));
+  };
+  const setCustomTextColor = (color: string) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], textColor: color }
+    }));
+  };
+  const setCustomAccentColor = (color: string) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], accentColor: color }
+    }));
+  };
+  const setCustomFontHeader = (font: string) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], fontHeader: font }
+    }));
+  };
+  const setCustomFontBody = (font: string) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], fontBody: font }
+    }));
+  };
+  const setCustomFontSizeMult = (mult: number) => {
+    setThemeOverrides(prev => ({
+      ...prev,
+      [selectedTheme]: { ...prev[selectedTheme], fontSizeMult: mult }
+    }));
+  };
+
   const [isDashboardVisible, setIsDashboardVisible] = useState(true);
 
   // Load custom Google Fonts dynamically

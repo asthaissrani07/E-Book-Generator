@@ -88,9 +88,14 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
   onChangeTheme,
   customBgColor,
   onChangeBgColor,
+  customTextColor,
   onChangeTextColor,
+  customAccentColor,
+  onChangeAccentColor,
   customFontHeader,
   onChangeFontHeader,
+  customFontBody,
+  onChangeFontBody,
   customFontSizeMult,
   onChangeFontSizeMult,
   onStyleChapters,
@@ -780,77 +785,28 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
 
               {/* DESIGN TAB */}
               {activeRightSidebarTab === 'design' && (
-                <div className="p-4 space-y-4 flex-1">
-                  <div>
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Book Fonts &amp; Colors</span>
-                    
-                    {/* Background preset swatches */}
-                    <div className="grid grid-cols-4 gap-2 mb-3">
-                      {[
-                        { bg: '#faf6f0', text: '#3d2314' },
-                        { bg: '#f8fafb', text: '#1a2a32' },
-                        { bg: '#fdf2f4', text: '#3d1f2a' },
-                        { bg: '#0d0e12', text: '#e2e8f0' },
-                      ].map((sw, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            onChangeBgColor(sw.bg);
-                            onChangeTextColor(sw.text);
-                          }}
-                          className="h-8 rounded-lg border border-slate-200 shadow-sm flex items-center justify-center cursor-pointer hover:border-slate-400"
-                          style={{ backgroundColor: sw.bg }}
-                        >
-                          <span className="text-[9px] font-bold" style={{ color: sw.text }}>Aa</span>
-                        </button>
-                      ))}
-                    </div>
-
-                    <div className="space-y-2.5">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-semibold text-slate-500">Size Multiplier</span>
-                        <select
-                          value={customFontSizeMult}
-                          onChange={(e) => onChangeFontSizeMult(Number(e.target.value))}
-                          className="border border-slate-200 rounded px-1.5 py-0.5 text-[10px]"
-                        >
-                          <option value={0.85}>0.85x (Small)</option>
-                          <option value={1.0}>1.0x (Normal)</option>
-                          <option value={1.2}>1.2x (Large)</option>
-                          <option value={1.4}>1.4x (XL)</option>
-                        </select>
-                      </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="text-[10px] font-semibold text-slate-500">Header Font</span>
-                        <select
-                          value={customFontHeader}
-                          onChange={(e) => onChangeFontHeader(e.target.value)}
-                          className="border border-slate-200 rounded px-1.5 py-0.5 text-[10px] max-w-[140px]"
-                        >
-                          <option value="">Theme Default</option>
-                          <option value="Playfair Display">Playfair Display</option>
-                          <option value="Lora">Lora</option>
-                          <option value="Cinzel">Cinzel</option>
-                          <option value="Montserrat">Montserrat</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <hr className="border-t border-slate-100" />
-
-                  <div className="flex-1 min-h-0 flex flex-col">
-                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Layout Themes</span>
-                    <div className="flex-1 overflow-y-auto pr-1">
-                      <ThemeSelector
-                        selectedTheme={selectedTheme}
-                        onChangeTheme={onChangeTheme}
-                        sections={sections}
-                        activePageIndex={activePageIndex}
-                        bookTitle={bookTitle}
-                      />
-                    </div>
+                <div className="p-4 flex flex-col h-full overflow-hidden">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-3">Layout Themes &amp; Customizer</span>
+                  <div className="flex-1 overflow-y-auto pr-1">
+                    <ThemeSelector
+                      selectedTheme={selectedTheme}
+                      onChangeTheme={onChangeTheme}
+                      sections={sections}
+                      activePageIndex={activePageIndex}
+                      bookTitle={bookTitle}
+                      customBgColor={customBgColor}
+                      onChangeBgColor={onChangeBgColor}
+                      customTextColor={customTextColor}
+                      onChangeTextColor={onChangeTextColor}
+                      customAccentColor={customAccentColor}
+                      onChangeAccentColor={onChangeAccentColor}
+                      customFontHeader={customFontHeader}
+                      onChangeFontHeader={onChangeFontHeader}
+                      customFontBody={customFontBody}
+                      onChangeFontBody={onChangeFontBody}
+                      customFontSizeMult={customFontSizeMult}
+                      onChangeFontSizeMult={onChangeFontSizeMult}
+                    />
                   </div>
                 </div>
               )}

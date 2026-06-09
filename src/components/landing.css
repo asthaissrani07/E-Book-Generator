@@ -265,6 +265,39 @@ html:has(.celestial-landing) {
   cursor: wait;
 }
 
+.celestial-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  align-self: flex-start;
+  padding: 0.85rem 1.75rem;
+  background: rgba(255, 255, 255, 0.45);
+  color: var(--cel-text);
+  border: 1px solid rgba(28, 28, 28, 0.15);
+  border-radius: 9999px;
+  font-family: var(--cel-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s, border-color 0.2s;
+  box-shadow: 0 4px 12px rgba(28, 28, 28, 0.05);
+}
+
+.celestial-btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(28, 28, 28, 0.3);
+  box-shadow: 0 8px 24px rgba(28, 28, 28, 0.12);
+}
+
+.celestial-btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+
 .celestial-btn-large {
   padding: 1rem 2.25rem;
   font-size: 0.85rem;

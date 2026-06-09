@@ -112,16 +112,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             {onLoadDemo && (
               <button
                 type="button"
-                className="celestial-btn-primary mt-2"
+                className="celestial-btn-secondary"
                 style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  color: '#e2e8f0',
                   marginTop: '0.75rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem',
                   width: '100%',
                 }}
                 onClick={onLoadDemo}

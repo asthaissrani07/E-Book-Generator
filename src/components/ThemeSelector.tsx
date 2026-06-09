@@ -257,12 +257,61 @@ const renderThemePreview = (
 }
 };
 
+const HEADING_FONTS = [
+  { name: 'Theme Default', value: '' },
+  { name: 'Playfair Display (Serif)', value: 'Playfair Display' },
+  { name: 'Lora (Serif)', value: 'Lora' },
+  { name: 'Cinzel (Serif)', value: 'Cinzel' },
+  { name: 'Cormorant Garamond (Serif)', value: 'Cormorant Garamond' },
+  { name: 'EB Garamond (Serif)', value: 'EB Garamond' },
+  { name: 'Montserrat (Sans-Serif)', value: 'Montserrat' },
+  { name: 'Outfit (Sans-Serif)', value: 'Outfit' },
+  { name: 'Poppins (Sans-Serif)', value: 'Poppins' },
+  { name: 'Pacifico (Cursive)', value: 'Pacifico' },
+  { name: 'Dancing Script (Cursive)', value: 'Dancing Script' },
+  { name: 'Sacramento (Cursive)', value: 'Sacramento' },
+];
+
+const BODY_FONTS = [
+  { name: 'Theme Default', value: '' },
+  { name: 'Lora (Serif)', value: 'Lora' },
+  { name: 'Merriweather (Serif)', value: 'Merriweather' },
+  { name: 'EB Garamond (Serif)', value: 'EB Garamond' },
+  { name: 'Cormorant Garamond (Serif)', value: 'Cormorant Garamond' },
+  { name: 'Inter (Sans-Serif)', value: 'Inter' },
+  { name: 'Roboto (Sans-Serif)', value: 'Roboto' },
+  { name: 'Poppins (Sans-Serif)', value: 'Poppins' },
+  { name: 'Outfit (Sans-Serif)', value: 'Outfit' },
+];
+
+const COLOR_PRESETS = [
+  { name: 'Vintage Beige', bg: '#faf6f0', text: '#3d2314', accent: '#c96f4a' },
+  { name: 'Botanical Green', bg: '#edf0ea', text: '#1e291e', accent: '#556b2f' },
+  { name: 'Clean Indigo', bg: '#ffffff', text: '#0f172a', accent: '#2563eb' },
+  { name: 'Midnight Noir', bg: '#0d0e12', text: '#e2e8f0', accent: '#d4af37' },
+  { name: 'Soft Rose', bg: '#fff5f5', text: '#2d1515', accent: '#e05a5a' },
+];
+
 interface ThemeSelectorProps {
   selectedTheme: string;
   onChangeTheme: (themeId: ThemeId) => void;
   sections?: EbookSection[];
   activePageIndex?: number;
   bookTitle?: string;
+
+  // Customizer props
+  customBgColor: string;
+  onChangeBgColor: (color: string) => void;
+  customTextColor: string;
+  onChangeTextColor: (color: string) => void;
+  customAccentColor: string;
+  onChangeAccentColor: (color: string) => void;
+  customFontHeader: string;
+  onChangeFontHeader: (font: string) => void;
+  customFontBody: string;
+  onChangeFontBody: (font: string) => void;
+  customFontSizeMult: number;
+  onChangeFontSizeMult: (mult: number) => void;
 }
 
 export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
@@ -271,6 +320,18 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
   sections,
   activePageIndex = 0,
   bookTitle = '',
+  customBgColor,
+  onChangeBgColor,
+  customTextColor,
+  onChangeTextColor,
+  customAccentColor,
+  onChangeAccentColor,
+  customFontHeader,
+  onChangeFontHeader,
+  customFontBody,
+  onChangeFontBody,
+  customFontSizeMult,
+  onChangeFontSizeMult,
 }) => {
   // Show the fourth page of the PDF (index 3) in the theme preview if available,
   // otherwise fallback to the last page (respecting activePageIndex if within range).
@@ -286,42 +347,239 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
       {EBOOK_THEMES.map((theme) => {
         const isSelected = selectedTheme === theme.id;
         return (
-          <button
+          <div
             key={theme.id}
-            onClick={() => onChangeTheme(theme.id)}
-            type="button"
-            className={`celestial-theme-card${isSelected ? ' selected' : ''}`}
+            onClick={() => {
+              if (!isSelected) onChangeTheme(theme.id);
+            }}
+            className={`celestial-theme-card flex-col !h-auto${isSelected ? ' selected' : ''}`}
+            style={{ cursor: isSelected ? 'default' : 'pointer' }}
           >
-            <div className="flex-1 flex flex-col justify-between min-w-0 pr-1">
-              <div>
-                <div className="flex justify-between items-center gap-2">
-                  <span className="celestial-theme-card-name truncate">{theme.name}</span>
-                  {isSelected && <span className="celestial-theme-card-badge flex-shrink-0">Active</span>}
+            {/* Top clickable row / header info */}
+            <div className="flex w-full items-stretch justify-between gap-3 min-h-[160px]">
+              <div className="flex-1 flex flex-col justify-between min-w-0 pr-1">
+                <div>
+                  <div className="flex justify-between items-center gap-2">
+                    <span className="celestial-theme-card-name truncate">{theme.name}</span>
+                    {isSelected && <span className="celestial-theme-card-badge flex-shrink-0">Active</span>}
+                  </div>
+                  <p className="celestial-theme-card-desc">{theme.description}</p>
                 </div>
-                <p className="celestial-theme-card-desc">{theme.description}</p>
+
+                <div>
+                  <div className="celestial-theme-swatches">
+                    {theme.paletteColors.map((color, idx) => (
+                      <div
+                        key={idx}
+                        className="celestial-theme-swatch"
+                        style={{ backgroundColor: color }}
+                        title={color}
+                      />
+                    ))}
+                  </div>
+                  <div className="celestial-theme-fonts">
+                    <span className="truncate">{theme.fontHeader}</span>
+                    <span style={{ opacity: 0.35 }}>|</span>
+                    <span className="truncate">{theme.fontBody}</span>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <div className="celestial-theme-swatches">
-                  {theme.paletteColors.map((color, idx) => (
-                    <div
-                      key={idx}
-                      className="celestial-theme-swatch"
-                      style={{ backgroundColor: color }}
-                      title={color}
-                    />
-                  ))}
-                </div>
-                <div className="celestial-theme-fonts">
-                  <span className="truncate">{theme.fontHeader}</span>
-                  <span style={{ opacity: 0.35 }}>|</span>
-                  <span className="truncate">{theme.fontBody}</span>
-                </div>
-              </div>
+              {renderThemePreview(theme, currentSection, bookTitle, totalPages, pageIndex)}
             </div>
 
-            {renderThemePreview(theme, currentSection, bookTitle, totalPages, pageIndex)}
-          </button>
+            {/* Customizer controls rendered if selected */}
+            {isSelected && (
+              <div
+                className="w-full mt-4 pt-4 border-t border-slate-200/50 space-y-4 animate-fade-in"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Colors overrides */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase block">Color Palette Overrides</span>
+                  
+                  {/* Swatches */}
+                  <div className="flex flex-wrap gap-1.5 mb-2.5">
+                    {COLOR_PRESETS.map((preset) => {
+                      const isPresetActive = customBgColor === preset.bg && customTextColor === preset.text && customAccentColor === preset.accent;
+                      return (
+                        <button
+                          key={preset.name}
+                          type="button"
+                          onClick={() => {
+                            onChangeBgColor(preset.bg);
+                            onChangeTextColor(preset.text);
+                            onChangeAccentColor(preset.accent);
+                          }}
+                          title={preset.name}
+                          className={`px-2 py-1 rounded-lg text-[10px] font-semibold border flex items-center gap-1 transition-all ${
+                            isPresetActive
+                              ? 'border-slate-800 bg-slate-900 text-white shadow-sm'
+                              : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+                          }`}
+                        >
+                          <span className="w-2.5 h-2.5 rounded-full border border-black/10 inline-block" style={{ backgroundColor: preset.bg }} />
+                          <span>{preset.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Color Inputs */}
+                  <div className="grid grid-cols-1 gap-3">
+                    {/* Background Color */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-semibold text-slate-500">Background Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={customBgColor || theme.bgColor}
+                          onChange={(e) => onChangeBgColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 shrink-0"
+                          style={{ padding: 0, outline: 'none' }}
+                        />
+                        <input
+                          type="text"
+                          value={customBgColor}
+                          onChange={(e) => onChangeBgColor(e.target.value)}
+                          placeholder={`Default: ${theme.bgColor}`}
+                          className="celestial-studio-input flex-1 py-1 px-2 text-xs"
+                          style={{ fontFamily: 'var(--cel-sans)', height: '2rem' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Text Color */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-semibold text-slate-500">Text Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={customTextColor || theme.textColor}
+                          onChange={(e) => onChangeTextColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 shrink-0"
+                          style={{ padding: 0, outline: 'none' }}
+                        />
+                        <input
+                          type="text"
+                          value={customTextColor}
+                          onChange={(e) => onChangeTextColor(e.target.value)}
+                          placeholder={`Default: ${theme.textColor}`}
+                          className="celestial-studio-input flex-1 py-1 px-2 text-xs"
+                          style={{ fontFamily: 'var(--cel-sans)', height: '2rem' }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Accent Color */}
+                    <div className="flex flex-col gap-1.5">
+                      <span className="text-[10px] font-semibold text-slate-500">Accent / Meta Color</span>
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="color"
+                          value={customAccentColor || theme.accentColor}
+                          onChange={(e) => onChangeAccentColor(e.target.value)}
+                          className="w-8 h-8 rounded-lg cursor-pointer border border-slate-200 shrink-0"
+                          style={{ padding: 0, outline: 'none' }}
+                        />
+                        <input
+                          type="text"
+                          value={customAccentColor}
+                          onChange={(e) => onChangeAccentColor(e.target.value)}
+                          placeholder={`Default: ${theme.accentColor}`}
+                          className="celestial-studio-input flex-1 py-1 px-2 text-xs"
+                          style={{ fontFamily: 'var(--cel-sans)', height: '2rem' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <hr className="border-t border-slate-100" style={{ margin: '0.75rem 0' }} />
+
+                {/* Typography overrides */}
+                <div className="space-y-3">
+                  <span className="text-[10px] font-bold tracking-wider text-slate-500 uppercase block">Typography Overrides</span>
+                  
+                  {/* Size scaling */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-slate-500">Font Size Multiplier</span>
+                    <div className="flex bg-slate-100 p-0.5 rounded-xl border border-slate-200/50">
+                      {[
+                        { label: 'Small', val: 0.85 },
+                        { label: 'Normal', val: 1.0 },
+                        { label: 'Large', val: 1.2 },
+                        { label: 'XL', val: 1.4 },
+                      ].map((size) => (
+                        <button
+                          key={size.label}
+                          type="button"
+                          onClick={() => onChangeFontSizeMult(size.val)}
+                          className={`flex-1 py-1 rounded-lg text-[10px] font-semibold transition-all ${
+                            customFontSizeMult === size.val
+                              ? 'bg-slate-900 text-white shadow'
+                              : 'text-slate-500 hover:text-slate-800'
+                          }`}
+                        >
+                          {size.label} ({size.val}x)
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Header Font style */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-slate-500">Heading Font Style</span>
+                    <select
+                      value={customFontHeader}
+                      onChange={(e) => onChangeFontHeader(e.target.value)}
+                      className="celestial-studio-input text-xs"
+                      style={{ fontFamily: 'var(--cel-sans)', fontSize: '0.78rem' }}
+                    >
+                      {HEADING_FONTS.map(f => (
+                        <option key={f.value} value={f.value}>{f.value === '' ? `Default (${theme.fontHeader})` : f.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Body Font style */}
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-[10px] font-semibold text-slate-500">Body Font Style</span>
+                    <select
+                      value={customFontBody}
+                      onChange={(e) => onChangeFontBody(e.target.value)}
+                      className="celestial-studio-input text-xs"
+                      style={{ fontFamily: 'var(--cel-sans)', fontSize: '0.78rem' }}
+                    >
+                      {BODY_FONTS.map(f => (
+                        <option key={f.value} value={f.value}>{f.value === '' ? `Default (${theme.fontBody})` : f.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* Reset Button */}
+                {(customBgColor || customTextColor || customAccentColor || customFontHeader || customFontBody || customFontSizeMult !== 1.0) && (
+                  <div className="pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChangeBgColor('');
+                        onChangeTextColor('');
+                        onChangeAccentColor('');
+                        onChangeFontHeader('');
+                        onChangeFontBody('');
+                        onChangeFontSizeMult(1.0);
+                      }}
+                      className="w-full text-center py-2 text-[10px] font-semibold tracking-wider uppercase text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-xl transition-all border border-red-200/50"
+                    >
+                      Reset Style Overrides
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         );
       })}
     </div>
