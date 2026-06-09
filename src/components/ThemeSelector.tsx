@@ -1,11 +1,55 @@
 import React from 'react';
 import { EBOOK_THEMES } from '../themes/themeConfig';
 import type { ThemeId } from '../themes/types';
+import { PageLayout } from './PageLayout';
+import type { EbookSection } from '../utils/pdfParser';
+
 
 export type { ThemeId };
 export type ThemeOption = (typeof EBOOK_THEMES)[number];
 
-const renderThemePreview = (theme: ThemeOption) => {
+const renderThemePreview = (
+  theme: ThemeOption,
+  section?: EbookSection,
+  bookTitle?: string,
+  totalPages?: number,
+  pageIndex?: number
+) => {
+  if (section) {
+    return (
+      <div className="celestial-theme-preview" style={{ position: 'relative', overflow: 'hidden', padding: 0 }}>
+        <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', overflow: 'hidden', borderRadius: 'inherit' }}>
+          <div
+            className={`theme-${theme.id}`}
+            style={{
+              width: '595px',
+              height: '842px',
+              transform: 'scale(0.235)',
+              transformOrigin: 'top left',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              pointerEvents: 'none'
+            }}
+          >
+            <PageLayout
+              section={section}
+              pageIndex={pageIndex ?? 1}
+              totalPages={totalPages ?? 1}
+              bookTitle={bookTitle ?? ''}
+              selectedTheme={theme.id as ThemeId}
+              onUpdateSection={() => {}}
+              onDeleteSection={() => {}}
+              onRegenerateImage={async () => {}}
+              isGeneratingImage={false}
+              isActive={false}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const previewStyle = {
     backgroundColor: theme.bgColor,
     color: theme.textColor,
@@ -203,9 +247,22 @@ const renderThemePreview = (theme: ThemeOption) => {
 interface ThemeSelectorProps {
   selectedTheme: string;
   onChangeTheme: (themeId: ThemeId) => void;
+  sections?: EbookSection[];
+  activePageIndex?: number;
+  bookTitle?: string;
 }
 
-export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ selectedTheme, onChangeTheme }) => {
+export const ThemeSelector: React.FC<ThemeSelectorProps> = ({
+  selectedTheme,
+  onChangeTheme,
+  sections,
+  activePageIndex = 0,
+  bookTitle = '',
+}) => {
+  const currentSection = sections && sections[activePageIndex];
+  const totalPages = sections ? sections.length : 1;
+  const pageIndex = activePageIndex + 1;
+
   return (
     <div className="celestial-theme-grid">
       {EBOOK_THEMES.map((theme) => {
@@ -245,7 +302,7 @@ export const ThemeSelector: React.FC<ThemeSelectorProps> = ({ selectedTheme, onC
               </div>
             </div>
 
-            {renderThemePreview(theme)}
+            {renderThemePreview(theme, currentSection, bookTitle, totalPages, pageIndex)}
           </button>
         );
       })}

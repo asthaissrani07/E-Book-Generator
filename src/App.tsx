@@ -48,6 +48,7 @@ function App() {
   const [customFontHeader, setCustomFontHeader] = useState('');
   const [customFontBody, setCustomFontBody] = useState('');
   const [customFontSizeMult, setCustomFontSizeMult] = useState(1.0);
+  const [isDashboardVisible, setIsDashboardVisible] = useState(true);
 
   // Load custom Google Fonts dynamically
   useEffect(() => {
@@ -469,7 +470,7 @@ function App() {
 
       <div className="flex-1 flex flex-col md:flex-row w-full h-full overflow-hidden">
         {/* 1. Dashboard Control Panel Wrapper */}
-        <div className={`${activeMobileView === 'controls' ? 'flex' : 'hidden'} md:flex w-full md:w-[400px] h-full overflow-hidden shrink-0`}>
+        <div className={`${isDashboardVisible && activeMobileView === 'controls' ? 'flex' : (isDashboardVisible ? 'hidden md:flex' : 'hidden')} w-full md:w-[400px] h-full overflow-hidden shrink-0`}>
           <Dashboard
             bookTitle={bookTitle}
             onChangeTitle={setBookTitle}
@@ -519,6 +520,27 @@ function App() {
             onNavigateToDashboard={() => setActiveMobileView('controls')}
             activePageIndex={activePageIndex}
             onSelectPage={handleSelectPage}
+            
+            // Customizer state and actions
+            onChangeTheme={setSelectedTheme}
+            customBgColor={customBgColor}
+            onChangeBgColor={setCustomBgColor}
+            customTextColor={customTextColor}
+            onChangeTextColor={setCustomTextColor}
+            customAccentColor={customAccentColor}
+            onChangeAccentColor={setCustomAccentColor}
+            customFontHeader={customFontHeader}
+            onChangeFontHeader={setCustomFontHeader}
+            customFontBody={customFontBody}
+            onChangeFontBody={setCustomFontBody}
+            customFontSizeMult={customFontSizeMult}
+            onChangeFontSizeMult={setCustomFontSizeMult}
+            onStyleChapters={handleStyleChapters}
+            isStyling={isStyling}
+            
+            // Dashboard toggle actions
+            isDashboardVisible={isDashboardVisible}
+            onToggleDashboard={() => setIsDashboardVisible(!isDashboardVisible)}
           />
           
           {/* Progress Overlay during AI styling */}

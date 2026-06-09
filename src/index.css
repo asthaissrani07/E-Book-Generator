@@ -1387,6 +1387,55 @@ body.pdf-exporting #ebook-download-wrapper {
 .warm-lead { font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important; }
 .warm-body-columns { font-size: calc(1.05rem * var(--eb-font-size-mult, 1)) !important; }
 
+/* ==========================================================================
+   CANVA-STYLE PDF CUSTOMIZATION EDITOR WORKSPACE STYLES
+   ========================================================================== */
+.canvas-grid-dots {
+  background-image: radial-gradient(rgba(28, 28, 28, 0.08) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+  background-color: #f3f4f6; /* slate-100 */
+}
+
+/* Scrollbar hiding utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Interactive elements inside sidebar and toolbar */
+.editor-page-outer-container {
+  box-sizing: border-box;
+  background-color: transparent;
+  transition: width 0.2s ease, height 0.2s ease;
+}
+
+.editor-page-outer-container:hover::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed #8b5cf6;
+  border-radius: 4px;
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+/* Adjust zoom layouts scroll spacing */
+.print-container {
+  transition: gap 0.2s ease, max-width 0.2s ease;
+}
 
 
 

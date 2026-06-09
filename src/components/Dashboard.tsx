@@ -213,7 +213,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                 <Palette size={13} />
                 <span>E-Book Design Theme</span>
               </label>
-              <ThemeSelector selectedTheme={selectedTheme} onChangeTheme={onChangeTheme} />
+              <ThemeSelector
+                selectedTheme={selectedTheme}
+                onChangeTheme={onChangeTheme}
+                sections={sections}
+                activePageIndex={activePageIndex}
+                bookTitle={bookTitle}
+              />
             </div>
 
             {/* Customizer Panel */}
