@@ -732,11 +732,13 @@ html:has(.celestial-landing) {
 
 .celestial-theme-card {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   justify-content: space-between;
+  align-items: stretch;
+  gap: 0.75rem;
   text-align: left;
-  padding: 1rem;
-  min-height: 148px;
+  padding: 0.85rem;
+  min-height: 220px;
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
@@ -868,3 +870,295 @@ html:has(.celestial-landing) {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Celestial Theme Previews styling */
+.celestial-theme-preview {
+  width: 140px;
+  height: 198px;
+  border-radius: 12px;
+  border: 1px solid rgba(28, 28, 28, 0.08);
+  box-shadow: 0 6px 16px rgba(28, 28, 28, 0.06);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 8px;
+  box-sizing: border-box;
+  transition: transform 0.2s, box-shadow 0.2s;
+  align-self: center;
+}
+
+.celestial-theme-card:hover .celestial-theme-preview {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(28, 28, 28, 0.09);
+}
+
+.mini-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.mini-line {
+  height: 3px;
+  border-radius: 1px;
+  background-color: currentColor;
+  opacity: 0.22;
+  margin-bottom: 3px;
+}
+.mini-line.short {
+  width: 55%;
+}
+.mini-line.title {
+  height: 5px;
+  opacity: 0.65;
+  margin-bottom: 5px;
+}
+
+/* Theme Editorial */
+.mini-arch {
+  width: 48px;
+  height: 60px;
+  border-radius: 24px 24px 0 0;
+  background-color: var(--theme-accent);
+  opacity: 0.7;
+  margin: 4px auto 6px;
+}
+.mini-sticker {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background-color: #f59e0b;
+  top: 8px;
+  right: 8px;
+  opacity: 0.8;
+}
+
+/* Wanderlust */
+.mini-wl-grid {
+  display: flex;
+  gap: 5px;
+  height: 100%;
+}
+.mini-wl-photo {
+  width: 38px;
+  height: 100%;
+  background-color: var(--theme-accent);
+  opacity: 0.55;
+  border-radius: 4px;
+}
+.mini-wl-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Soft Pink */
+.mini-sp-island {
+  background-color: #ffffff;
+  border-radius: 6px;
+  padding: 6px;
+  box-shadow: 0 3px 8px rgba(201, 107, 132, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  height: 90%;
+  margin: auto 0;
+}
+.mini-sp-photo {
+  height: 48px;
+  background-color: var(--theme-accent);
+  opacity: 0.45;
+  border-radius: 3px;
+}
+
+/* Comic */
+.mini-comic-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  height: 100%;
+  padding: 2px;
+}
+.mini-comic-panel {
+  border: 1px solid #1a1a1a;
+  background-color: var(--theme-accent);
+  opacity: 0.8;
+  position: relative;
+  border-radius: 2px;
+}
+.mini-comic-panel:nth-child(2) {
+  background-color: #ff6b35;
+}
+.mini-comic-panel:nth-child(3) {
+  background-color: #00b4d8;
+  grid-column: span 2;
+}
+.mini-comic-burst {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background-color: #fde68a;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  border: 0.5px solid #1a1a1a;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Sporty */
+.mini-sporty-bar {
+  width: 8px;
+  height: 100%;
+  background-color: var(--theme-accent);
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+.mini-sporty-content {
+  margin-left: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+.mini-sporty-photo {
+  height: 52px;
+  background-color: #e8e8e8;
+  border: 1px solid #121212;
+}
+
+/* Wellness */
+.mini-wellness-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.mini-wellness-banner {
+  height: 16px;
+  background-color: var(--theme-accent);
+  opacity: 0.15;
+  border-radius: 3px;
+}
+.mini-wellness-grid {
+  display: flex;
+  gap: 5px;
+}
+.mini-wellness-leaf {
+  width: 24px;
+  height: 24px;
+  border-radius: 50% 0;
+  background-color: #c8e6c9;
+  flex-shrink: 0;
+}
+
+/* Constructivist */
+.mini-construct-red {
+  height: 48px;
+  background-color: var(--theme-accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--theme-bg);
+  font-size: 11px;
+  font-weight: bold;
+}
+.mini-construct-photo {
+  height: 44px;
+  background-color: #121212;
+  margin-top: 5px;
+}
+.mini-construct-stripe {
+  height: 5px;
+  background-color: #121212;
+  transform: rotate(-4deg);
+  margin-top: 8px;
+}
+
+/* Newspaper */
+.mini-news-header {
+  border-bottom: 1px double #1a1a1a;
+  font-size: 8px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 5px;
+  padding-bottom: 2px;
+  letter-spacing: 0.02em;
+}
+.mini-news-circles {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+  margin-bottom: 5px;
+}
+.mini-news-circle {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background-color: var(--theme-accent);
+  opacity: 0.45;
+}
+.mini-news-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+
+/* Botanical */
+.mini-botanical-border {
+  border: 1px solid var(--theme-accent);
+  opacity: 0.35;
+  position: absolute;
+  inset: 4px;
+  pointer-events: none;
+}
+.mini-botanical-content {
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Modern */
+.mini-modern-header {
+  height: 18px;
+  background-color: var(--theme-accent);
+  border-radius: 3px;
+  margin-bottom: 5px;
+}
+.mini-modern-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+}
+.mini-modern-card {
+  height: 44px;
+  background-color: #f1f5f9;
+  border: 0.5px solid rgba(0,0,0,0.04);
+  border-radius: 3px;
+}
+
+/* Noir */
+.mini-noir-border {
+  border: 1.5px solid var(--theme-accent);
+  position: absolute;
+  inset: 4px;
+}
+.mini-noir-dots {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 2px;
+}
+.mini-noir-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background-color: var(--theme-accent);
+}
+

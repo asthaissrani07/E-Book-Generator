@@ -108,30 +108,6 @@ export function getThemeImageSlots(
       `Wide noir cinematic spread, deep shadows gold highlights, ${ch}`,
       `Mysterious atmospheric photograph, midnight noir style, ${ch}`,
     ],
-    pinterest: [
-      `Aesthetic Pinterest classic photo, warm terracotta beige, ${ch}, white peony flower, desaturated lifestyle photography`,
-      `Hands typing on classic keyboard, laptop, coffee cup, Pinterest moodboard, warm neutral tones, ${ch}`,
-      `Girl holding flowers, soft linen dress, terracotta clay aesthetic, warm studio lighting, ${book}`,
-      `Aesthetic round circle thumbnail, soft pastel terracotta rose, dried flower close-up, ${ch}`,
-      `Arched frame, aesthetic photography, books and coffee on linen sheet, warm beige palette, ${ch}`,
-      `Minimalist moodboard layout, terracotta clay brown tones, warm aesthetic flatlay, ${ch}`,
-    ],
-    pinterest_teal: [
-      `Professional business brochure cover, skyscraper skyline photography with teal color overlay, corporate branding, modern architecture, ${ch}`,
-      `Professional corporate headshot of CEO business founder, black and white portrait, modern executive, ${ch}`,
-      `Modern glass skyscraper architecture, wide cityscape, teal and navy tone, professional, ${book}`,
-      `Corporate headshot portrait of a team member, professional leader, business card photo, ${ch}`,
-      `Minimalist corporate icon illustration, suitcase folder symbol, teal and navy palette, professional business, ${ch}`,
-      `Modern office desk flatlay, laptop and teal coffee cup, corporate branding guidelines, professional aesthetic, ${ch}`,
-    ],
-    pinterest_pink: [
-      `Aesthetic fashion book cover, model walking in city street, vertical portrait, muted colors, soft pink grading, ${ch}`,
-      `Aesthetic pink moodboard photo, dried rose flower petals on linen sheet, cup of tea, desaturated lifestyle photography, ${ch}`,
-      `Aesthetic polaroid frame mockup, retro photo style, dusty rose background, lifestyle details, ${book}`,
-      `Cute polaroid picture of two friends laughing, pink frame, warm soft lighting, portrait, ${ch}`,
-      `Minimalist pastel pink graphic illustration, heart star outline shapes, aesthetic flatlay, ${ch}`,
-      `Hands flipping through fashion magazine, coffee cup, white roses on table, warm aesthetic lifestyle, ${ch}`,
-    ],
   };
 
   return buildSlots(promptSets[themeId], baseSeed);

@@ -309,22 +309,25 @@ function applyExportCloneStyles(page: HTMLElement, exportScale: number): void {
   page.style.setProperty('-webkit-font-smoothing', 'antialiased');
   page.style.setProperty('text-rendering', 'optimizeLegibility');
 
-  if (exportScale < 0.995) {
-    page.style.transformOrigin = 'top center';
-    page.style.transform = `scale(${exportScale})`;
-  } else {
-    page.style.transform = 'none';
+  const bodyEl = page.querySelector('.ebook-page-body') as HTMLElement | null;
+  if (bodyEl) {
+    if (exportScale < 0.995) {
+      bodyEl.style.transformOrigin = 'top center';
+      bodyEl.style.transform = `scale(${exportScale})`;
+    } else {
+      bodyEl.style.transform = 'none';
+    }
   }
 }
 
 /**
- * Measure natural page height, then scale the whole page to fit A4 (matches preview, no clipping).
+ * Measure natural page height, then scale the page body content to fit A4 (matches preview, no clipping).
  */
 export function fitPageForExport(pageEl: HTMLElement): { restore: () => void; scale: number } {
-  const prev = {
+  const bodyEl = pageEl.querySelector('.ebook-page-body') as HTMLElement | null;
+
+  const prevPage = {
     zoom: pageEl.style.zoom,
-    transform: pageEl.style.transform,
-    transformOrigin: pageEl.style.transformOrigin,
     height: pageEl.style.height,
     minHeight: pageEl.style.minHeight,
     maxHeight: pageEl.style.maxHeight,
@@ -333,43 +336,66 @@ export function fitPageForExport(pageEl: HTMLElement): { restore: () => void; sc
     overflow: pageEl.style.overflow,
   };
 
+  const prevBody = bodyEl ? {
+    transform: bodyEl.style.transform,
+    transformOrigin: bodyEl.style.transformOrigin,
+    height: bodyEl.style.height,
+  } : null;
+
   pageEl.style.zoom = '';
-  pageEl.style.transform = 'none';
   pageEl.style.width = `${PAGE_CSS_WIDTH}px`;
   pageEl.style.maxWidth = `${PAGE_CSS_WIDTH}px`;
-  pageEl.style.height = 'auto';
-  pageEl.style.minHeight = `${PAGE_CSS_HEIGHT}px`;
+  pageEl.style.setProperty('height', 'auto', 'important');
+  pageEl.style.setProperty('min-height', `${PAGE_CSS_HEIGHT}px`, 'important');
   pageEl.style.maxHeight = 'none';
   pageEl.style.overflow = 'visible';
 
+  if (bodyEl) {
+    bodyEl.style.transform = 'none';
+    bodyEl.style.height = 'auto';
+  }
+
   const naturalH = Math.max(pageEl.scrollHeight, pageEl.getBoundingClientRect().height);
   const naturalW = pageEl.scrollWidth;
-  const scaleH = naturalH > PAGE_CSS_HEIGHT ? (PAGE_CSS_HEIGHT / naturalH) * EXPORT_FIT_MARGIN : 1;
+
+  const bodyH = bodyEl ? Math.max(bodyEl.scrollHeight, bodyEl.getBoundingClientRect().height) : 0;
+  const nonBodyH = Math.max(0, naturalH - bodyH);
+  const targetBodyH = PAGE_CSS_HEIGHT - nonBodyH;
+
+  let scaleH = 1;
+  if (bodyH > 0 && targetBodyH < bodyH) {
+    scaleH = (targetBodyH / bodyH) * EXPORT_FIT_MARGIN;
+  }
+
   const scaleW = naturalW > PAGE_CSS_WIDTH ? (PAGE_CSS_WIDTH / naturalW) * EXPORT_FIT_MARGIN : 1;
   const scale = Math.min(scaleH, scaleW, 1);
 
-  pageEl.style.height = `${PAGE_CSS_HEIGHT}px`;
-  pageEl.style.minHeight = `${PAGE_CSS_HEIGHT}px`;
-  pageEl.style.maxHeight = `${PAGE_CSS_HEIGHT}px`;
+  pageEl.style.setProperty('height', `${PAGE_CSS_HEIGHT}px`, 'important');
+  pageEl.style.setProperty('min-height', `${PAGE_CSS_HEIGHT}px`, 'important');
+  pageEl.style.setProperty('max-height', `${PAGE_CSS_HEIGHT}px`, 'important');
   pageEl.style.overflow = 'hidden';
 
-  if (scale < 0.995) {
-    pageEl.style.transformOrigin = 'top center';
-    pageEl.style.transform = `scale(${scale})`;
+  if (bodyEl && scale < 0.995) {
+    bodyEl.style.transformOrigin = 'top center';
+    bodyEl.style.transform = `scale(${scale})`;
   }
 
   return {
     scale,
     restore: () => {
-      pageEl.style.zoom = prev.zoom;
-      pageEl.style.transform = prev.transform;
-      pageEl.style.transformOrigin = prev.transformOrigin;
-      pageEl.style.height = prev.height;
-      pageEl.style.minHeight = prev.minHeight;
-      pageEl.style.maxHeight = prev.maxHeight;
-      pageEl.style.width = prev.width;
-      pageEl.style.maxWidth = prev.maxWidth;
-      pageEl.style.overflow = prev.overflow;
+      pageEl.style.zoom = prevPage.zoom;
+      pageEl.style.height = prevPage.height;
+      pageEl.style.minHeight = prevPage.minHeight;
+      pageEl.style.maxHeight = prevPage.maxHeight;
+      pageEl.style.width = prevPage.width;
+      pageEl.style.maxWidth = prevPage.maxWidth;
+      pageEl.style.overflow = prevPage.overflow;
+
+      if (bodyEl && prevBody) {
+        bodyEl.style.transform = prevBody.transform;
+        bodyEl.style.transformOrigin = prevBody.transformOrigin;
+        bodyEl.style.height = prevBody.height;
+      }
     },
   };
 }

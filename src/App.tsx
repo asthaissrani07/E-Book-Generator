@@ -182,6 +182,51 @@ function App() {
     }
   };
 
+  const handleLoadDemo = () => {
+    const title = 'Whispers of the Cosmos';
+    const demoSections: EbookSection[] = [
+      {
+        id: 'demo-1',
+        title: 'Front Cover',
+        chapterTitle: 'Front Cover',
+        showChapterHeading: false,
+        showImage: true,
+        content: 'Whispers of the Cosmos\n\nAn Editorial Journey through Stars and Silence\n\nBy Sarah Penrose',
+        imagePrompt: 'Minimal editorial layout cover, celestial map with thin gold lines, dark navy background, stargazing aesthetic',
+        imageUrl: buildImageUrl('Minimal editorial layout cover, celestial map with thin gold lines, dark navy background, stargazing aesthetic', 7),
+        layout: 'cover',
+      },
+      {
+        id: 'demo-2',
+        title: 'Chapter 1: The First Star',
+        chapterTitle: 'The First Star',
+        showChapterHeading: true,
+        showImage: true,
+        content: 'It was an evening of quiet wonders when we first noticed the shift. In the high desert, far from city glows, the sky turned a deep, velvety shade of indigo.\n\n"Look," she said, pointing toward the eastern horizon. A single pinprick of light flickered with intense gold warmth. It did not match any star chart. We sat in the cold silence of the dune, listening to the wind and watching the visitor rise slowly, as if deciding whether to stay.',
+        imagePrompt: 'Warm boho business ebook photo, chapter title page, starry sky golden light terracotta beige aesthetic',
+        imageUrl: buildImageUrl('Starry sky golden light terracotta beige aesthetic', 42),
+        extraImageUrls: buildEditorialImageSet('The First Star', 'Whispers of the Cosmos', 2).extras,
+        layout: 'editorial',
+      },
+      {
+        id: 'demo-3',
+        title: 'Chapter 2: Beyond the Horizon',
+        chapterTitle: 'Beyond the Horizon',
+        showChapterHeading: true,
+        showImage: true,
+        content: 'To travel beyond what is known requires more than just map and compass. It requires a willingness to lose sight of the shore.\n\nOur instruments hummed in the stillness. Every reading pointed to a region of space that theoretically should not exist. A pocket of silence, a cosmic shelter. As we drew nearer, the stars ahead began to dim, swallowed by a gentle shadow that felt less like darkness and more like a warm embrace.',
+        imagePrompt: 'Desert dunes and starlight, minimal space explorer, warm terracotta beige gold colors',
+        imageUrl: buildImageUrl('Desert dunes and starlight, minimal space explorer, warm terracotta beige gold colors', 83),
+        layout: 'split',
+      }
+    ];
+
+    setBookTitle(title);
+    setSections(ensureSectionImageUrls(demoSections, title));
+    setActivePageIndex(0);
+    setAppView('studio');
+  };
+
   const handleUpdateSection = (index: number, updated: EbookSection) => {
     const copy = [...sections];
     copy[index] = updated;
@@ -379,6 +424,7 @@ function App() {
     return (
       <LandingPage
         onImportPdf={handleUploadPdf}
+        onLoadDemo={handleLoadDemo}
         isParsing={isParsing}
         parseError={parseError}
       />

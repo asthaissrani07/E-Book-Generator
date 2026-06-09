@@ -103,6 +103,7 @@ export const ThemeCover: React.FC<{
               className="comic-cover-art"
               imageVersion={imageVersion}
               isActive={isActive}
+              pdfExportMode={pdfExportMode}
             />
           </div>
         )}
@@ -258,121 +259,7 @@ export const ThemeCover: React.FC<{
     );
   }
 
-  if (themeId === 'pinterest') {
-    return (
-      <div className="layout-cover">
-        {shouldShowImage && (
-          <div className="layout-cover-images no-print">
-            {[imageSlots.primary, ...imageSlots.extras.slice(0, 2)].map((slot, i) => (
-              <div key={i} className="layout-cover-circle">
-                <Img slot={slot} alt={`Cover ${i}`} className="w-full h-full object-cover" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
-              </div>
-            ))}
-          </div>
-        )}
-        <h1
-          contentEditable
-          suppressContentEditableWarning
-          onBlur={(e) => onTitleChange(e.currentTarget.innerText)}
-          className="layout-cover-title focus:outline-none focus:bg-black/5 rounded px-1 min-w-[100px] text-center"
-        >
-          {title || 'Contents'}
-        </h1>
-        <div className="layout-cover-desc">E-Book Aesthetic Lookbook</div>
-        <div className="layout-cover-author">by Studio Publisher</div>
-      </div>
-    );
-  }
 
-  if (themeId === 'pinterest_teal') {
-    return (
-      <div className="layout-cover">
-        <div className="pinterest-teal-cover-top">
-          {shouldShowImage && (
-            <Img
-              slot={imageSlots.primary}
-              alt="Pinterest Teal cover"
-              className="pinterest-teal-cover-top-img"
-              imageVersion={imageVersion}
-              isActive={isActive}
-              pdfExportMode={pdfExportMode}
-            />
-          )}
-          <div className="pinterest-teal-cover-diagonal" />
-          <div className="pinterest-teal-cover-logo">
-            <div className="pinterest-teal-cover-logo-icon">P</div>
-            <div className="pinterest-teal-cover-brand">BRAND<br />NAME</div>
-          </div>
-          <div className="pinterest-teal-cover-card">
-            <p className="pinterest-teal-cover-subtitle">Business Plan</p>
-            <h1
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => onTitleChange(e.currentTarget.innerText)}
-              className="pinterest-teal-cover-title focus:outline-none focus:bg-white/10 rounded px-1"
-            >
-              {title || 'BROCHURE'}
-            </h1>
-            <p className="pinterest-teal-cover-desc">
-              The Biggest Risk Is Not Taking Any Risk. In A World That's Changing Really Quickly, The Only Strategy That Is Guaranteed To Fail Is Not Taking Risks.
-            </p>
-          </div>
-        </div>
-        <div className="pinterest-teal-cover-bottom">
-          <div className="pinterest-teal-cover-details">
-            <div className="pinterest-teal-cover-web">www.example.com</div>
-            <div className="pinterest-teal-cover-contact">
-              +0123 456 789<br />
-              sales@example.com<br />
-              Your Address Name Here
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (themeId === 'pinterest_pink') {
-    return (
-      <div className="layout-cover">
-        <div className="pinterest-pink-cover-header">
-          <span className="pinterest-pink-cover-subtitle">The</span>
-          <span className="pinterest-pink-cover-ch">CH.<br />01</span>
-        </div>
-        <div className="pinterest-pink-cover-title-row">
-          <h1
-            contentEditable
-            suppressContentEditableWarning
-            onBlur={(e) => onTitleChange(e.currentTarget.innerText)}
-            className="pinterest-pink-cover-title focus:outline-none focus:bg-black/5 rounded px-1"
-          >
-            {title || 'Diandra'}
-          </h1>
-        </div>
-        {shouldShowImage && (
-          <div className="pinterest-pink-cover-img-frame">
-            <Img
-              slot={imageSlots.primary}
-              alt="Pinterest Pink cover"
-              className="w-full h-full object-cover"
-              imageVersion={imageVersion}
-              isActive={isActive}
-              pdfExportMode={pdfExportMode}
-            />
-          </div>
-        )}
-        <div className="pinterest-pink-cover-bottom-split">
-          <div className="pinterest-pink-cover-bottom-text">
-            <span className="pinterest-pink-cover-bottom-num">25</span>
-            <span className="pinterest-pink-cover-bottom-desc">
-              CREATIVE PORTRAITS<br />
-              Capture the essence of style and elegance in retro frames.
-            </span>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // Default cover (editorial + legacy themes)
   return (
@@ -434,88 +321,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
     />
   );
 
-  // ── PINTEREST CLASSIC OVERVIEW ──
-  if (themeId === 'pinterest') {
-    return (
-      <div className="pinterest-overview-container h-full w-full">
-        {/* Vertical Sidebar */}
-        <div className="pinterest-vertical-sidebar">
-          {shouldShowChapterHeading ? chapterHeadingText : 'Overview'}
-        </div>
 
-        {/* Content Area */}
-        <div className="pinterest-overview-content">
-          {/* Top Checklist */}
-          <div
-            contentEditable
-            suppressContentEditableWarning
-            onBlur={(e) => onTextChange('content', body ? `${e.currentTarget.innerHTML}<br><br>${body}` : e.currentTarget.innerHTML)}
-            dangerouslySetInnerHTML={{ __html: lead }}
-            className="pinterest-overview-checklist focus:outline-none focus:bg-black/5 rounded px-1"
-          />
-
-          {/* 2 columns layout below */}
-          {body && bodyEditor('warm-body-columns focus:outline-none focus:bg-black/5 rounded p-1 whitespace-pre-line', true)}
-        </div>
-      </div>
-    );
-  }
-
-  // ── PINTEREST TEAL QUOTE LAYOUT ──
-  if (themeId === 'pinterest_teal') {
-    return (
-      <div className="pinterest-teal-quote-container h-full w-full">
-        <div className="pinterest-teal-quote-marks">“</div>
-        <div className="pinterest-teal-quote-kicker">SUCCESS USUALLY COMES TO</div>
-        <h2
-          contentEditable
-          suppressContentEditableWarning
-          onBlur={(e) => onTextChange('title', e.currentTarget.innerText)}
-          className="pinterest-teal-quote-text focus:outline-none focus:bg-black/5 rounded px-1"
-        >
-          {chapterHeadingText}
-        </h2>
-        <div
-          contentEditable
-          suppressContentEditableWarning
-          onBlur={(e) => onTextChange('content', e.currentTarget.innerHTML)}
-          dangerouslySetInnerHTML={{ __html: section.content }}
-          className="pinterest-teal-quote-body focus:outline-none focus:bg-black/5 rounded p-1"
-        />
-      </div>
-    );
-  }
-
-  // ── PINTEREST PINK CHECKLIST ──
-  if (themeId === 'pinterest_pink') {
-    const checklistLines = (section.content || '')
-      .split(/[.\n]/)
-      .map((s) => s.trim())
-      .filter((s) => s.length > 5)
-      .slice(0, 4);
-
-    const checklistHeadings = ['Introduction', 'Fashion Look', 'Lifestyle Concept', 'Creation Process'];
-
-    return (
-      <div className="pinterest-pink-list-container h-full w-full">
-        <div className="pinterest-pink-list-card">
-          <div className="pinterest-pink-list-content">
-            {checklistHeadings.map((heading, i) => (
-              <div key={i} className="pinterest-pink-list-item">
-                <div className="pinterest-pink-list-num">0{i + 1}</div>
-                <div className="pinterest-pink-list-text">
-                  <div className="pinterest-pink-list-title">{heading}</div>
-                  <div className="pinterest-pink-list-desc">
-                    {checklistLines[i] || 'Explore the aesthetic collection and creative concepts.'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   // ── POP ART COMIC ──
   if (themeId === 'comic') {
