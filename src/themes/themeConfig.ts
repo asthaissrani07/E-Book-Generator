@@ -68,17 +68,6 @@ export const EBOOK_THEMES: ThemeOption[] = [
     paletteColors: ['#fafafa', '#c8e6c9', '#7c5295', '#e91e63'],
   },
   {
-    id: 'construct',
-    name: 'Constructivist Zine',
-    description: 'Russian constructivism — bold red blocks, cream paper, oversized type, B&W photography.',
-    bgColor: '#f5f2e9',
-    accentColor: '#a51c1c',
-    textColor: '#121212',
-    fontHeader: 'Anton',
-    fontBody: 'Montserrat',
-    paletteColors: ['#f5f2e9', '#a51c1c', '#121212', '#ffffff'],
-  },
-  {
     id: 'newspaper',
     name: 'NYT Newspaper',
     description: 'Broadsheet editorial — multi-column serif text, pastel circle infographics, classic news feel.',

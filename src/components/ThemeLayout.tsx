@@ -23,7 +23,7 @@ interface ThemeLayoutProps {
 function splitContent(content: string) {
   if (!content) return { lead: '', body: '' };
 
-  let normalized = content
+  const normalized = content
     .replace(/<br\s*\/?>\s*<br\s*\/?>/gi, '<!--split-->')
     .replace(/<\/div>\s*<div>/gi, '<!--split-->')
     .replace(/<\/p>\s*<p>/gi, '<!--split-->')
@@ -190,27 +190,7 @@ export const ThemeCover: React.FC<{
     );
   }
 
-  if (themeId === 'construct') {
-    return (
-      <div className="layout-construct-cover">
-        <div className="construct-cover-red">
-          <h1
-            contentEditable
-            suppressContentEditableWarning
-            onBlur={(e) => onTitleChange(e.currentTarget.innerText)}
-            className="construct-cover-title"
-          >
-            {title}
-          </h1>
-        </div>
-        {shouldShowImage && (
-          <div className="construct-cover-photo">
-            <Img slot={imageSlots.primary} alt="Construct cover" className="construct-cover-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
-          </div>
-        )}
-      </div>
-    );
-  }
+
 
   if (themeId === 'newspaper') {
     return (
@@ -590,51 +570,7 @@ export const ThemeEditorial: React.FC<ThemeLayoutProps> = (props) => {
     );
   }
 
-  // ── CONSTRUCTIVIST ──
-  if (themeId === 'construct') {
-    return (
-      <div className="layout-construct">
-        <div className="construct-red-bar">
-          <span className="construct-page-num">{pageNum}</span>
-        </div>
-        <div className="construct-body">
-          {shouldShowChapterHeading && (
-            <h2
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => onTextChange('title', e.currentTarget.innerText)}
-              className="construct-title"
-            >
-              {chapterHeadingText}
-            </h2>
-          )}
-          <div className="construct-grid">
-            {shouldShowImage && (
-              <div className="construct-photo">
-                <Img slot={imageSlots.primary} alt={chapterHeadingText} className="construct-photo-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
-              </div>
-            )}
-            <div
-              contentEditable
-              suppressContentEditableWarning
-              onBlur={(e) => onTextChange('content', body ? `${e.currentTarget.innerHTML}<br><br>${body}` : e.currentTarget.innerHTML)}
-              dangerouslySetInnerHTML={{ __html: lead }}
-              className="construct-text"
-            />
-          </div>
-          {body && bodyEditor('construct-columns', true)}
-          <div className="construct-panels">
-            {extras.slice(0, 4).map((slot, i) => (
-              <div key={i} className="construct-panel">
-                <Img slot={slot} alt={`Panel ${i}`} className="construct-panel-img" imageVersion={imageVersion} isActive={isActive} pdfExportMode={pdfExportMode} />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="construct-side-text">{shouldShowChapterHeading ? 'SUMARIO' : 'CONT.'}</div>
-      </div>
-    );
-  }
+
 
   // ── NEWSPAPER ──
   if (themeId === 'newspaper') {
@@ -1383,7 +1319,7 @@ export const ThemeLavender: React.FC<ThemeLavenderProps> = (props) => {
   );
 
   const footer = (
-    <div className="lavender-footer">
+    <div className="lavender-footer-band">
       <span>Artistic E-Book Series</span>
       <span>{pageNum}</span>
     </div>
@@ -1429,7 +1365,7 @@ export const ThemeLavender: React.FC<ThemeLavenderProps> = (props) => {
   }
 
   if (layout === 'editorial') {
-    // Chapter opener layout (sidebar removed, full width with unified header/footer)
+    // Chapter opener layout (sidebar removed, full width with unified header/footer & botanical divider)
     return (
       <div className="layout-lavender-opener">
         {header}
@@ -1451,6 +1387,11 @@ export const ThemeLavender: React.FC<ThemeLavenderProps> = (props) => {
             dangerouslySetInnerHTML={{ __html: section.content }}
             className="lavender-opener-desc"
           />
+          <div className="lavender-opener-decor-section">
+            <svg className="lavender-flower-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2">
+              <path d="M12 22V10M12 10C10.5 8 9.5 8 9 9.5C8.5 11 9.5 12 12 10ZM12 10C13.5 8 14.5 8 15 9.5C15.5 11 14.5 12 12 10ZM12 14C10.5 12.5 9.5 12.5 9 13.5C8.5 14.5 9.5 15.5 12 14ZM12 14C13.5 12.5 14.5 12.5 15 13.5C15.5 14.5 14.5 15.5 12 14ZM12 18C10.5 17 9.5 17 9 17.8C8.5 18.5 9.5 19.2 12 18ZM12 18C13.5 17 14.5 17 15 17.8C15.5 18.5 14.5 19.2 12 18Z" />
+            </svg>
+          </div>
         </div>
         {footer}
       </div>

@@ -1093,28 +1093,7 @@ html:has(.celestial-landing) {
   flex-shrink: 0;
 }
 
-/* Constructivist */
-.mini-construct-red {
-  height: 48px;
-  background-color: var(--theme-accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--theme-bg);
-  font-size: 11px;
-  font-weight: bold;
-}
-.mini-construct-photo {
-  height: 44px;
-  background-color: #121212;
-  margin-top: 5px;
-}
-.mini-construct-stripe {
-  height: 5px;
-  background-color: #121212;
-  transform: rotate(-4deg);
-  margin-top: 8px;
-}
+
 
 /* Newspaper */
 .mini-news-header {

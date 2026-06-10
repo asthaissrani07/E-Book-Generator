@@ -208,8 +208,6 @@ export const EbookViewer: React.FC<EbookViewerProps> = ({
         matchedTheme = 'sporty';
       } else if (textLower.includes('wellness') || textLower.includes('calm')) {
         matchedTheme = 'wellness';
-      } else if (textLower.includes('construct') || textLower.includes('zine')) {
-        matchedTheme = 'construct';
       } else if (textLower.includes('news') || textLower.includes('paper')) {
         matchedTheme = 'newspaper';
       } else if (textLower.includes('botanical') || textLower.includes('garden')) {

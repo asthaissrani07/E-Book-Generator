@@ -68,14 +68,6 @@ export function getThemeImageSlots(
       `Wide wellness product spread, supplement bottles and herbs, purple green accents, ${ch}`,
       `Botanical line art style wellness photo, dried herbs flowers, professional clean, ${ch}`,
     ],
-    construct: [
-      `Black and white high contrast photograph, constructivist editorial style, geometric composition, ${ch}`,
-      `Grayscale dramatic portrait photograph, Russian constructivism zine aesthetic, bold contrast, ${ch}`,
-      `B&W architectural photograph, constructivist magazine layout, ${book}`,
-      `Small B&W documentary photo, constructivist grid panel, ${ch}`,
-      `Wide grayscale editorial photograph, bold red constructivist zine style, ${ch}`,
-      `Black white street photography, high contrast constructivist aesthetic, ${ch}`,
-    ],
     newspaper: [
       `Editorial nature photograph birds on branches, soft pastel yellow pink blue green circle backgrounds, NYT magazine style, ${ch}`,
       `Scientific nature illustration style photo, birds wildlife, pastel colored circles, newspaper infographic, ${ch}`,

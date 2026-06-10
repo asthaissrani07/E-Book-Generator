@@ -40,7 +40,7 @@ async function callGroqAPI(
     try {
       const errJson = JSON.parse(errText);
       errMsg = errJson.error?.message || errMsg;
-    } catch (_) {
+    } catch {
       errMsg = errText || errMsg;
     }
     throw new Error(errMsg);
@@ -96,7 +96,6 @@ Rules:
    - For 'comic': Pop art comic book illustration, bold black outlines, vibrant flat magenta orange cyan yellow, halftone dots, high saturation.
    - For 'sporty': Dynamic sports action photo, athlete in motion, maroon red accents, high contrast.
    - For 'wellness': Herbal botanical ingredients, clean white background, professional supplement brochure.
-   - For 'construct': Black and white high contrast photograph, constructivist zine aesthetic.
    - For 'newspaper': Editorial nature photograph, birds wildlife, pastel circle backgrounds, NYT magazine style.
    - For 'botanical': Watercolor, organic illustration, sage green, hand-drawn botanical details.
    - For 'modern': Minimal corporate rendering, clean geometric forms, corporate blue and gray.

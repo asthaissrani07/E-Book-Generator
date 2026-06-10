@@ -2222,19 +2222,6 @@ body.pdf-exporting #ebook-download-wrapper {
 .wellness-columns {
   font-size: calc(0.68rem * var(--eb-font-size-mult, 1)) !important;
 }
-
-.construct-title {
-  font-size: calc(1.75rem * var(--eb-font-size-mult, 1)) !important;
-}
-
-.construct-text {
-  font-size: calc(0.72rem * var(--eb-font-size-mult, 1)) !important;
-}
-
-.construct-columns {
-  font-size: calc(0.65rem * var(--eb-font-size-mult, 1)) !important;
-}
-
 .nyt-headline {
   font-size: calc(1.55rem * var(--eb-font-size-mult, 1)) !important;
 }
@@ -2422,8 +2409,6 @@ body.pdf-exporting #ebook-download-wrapper {
 .ebook-page:not(.layout-cover) .sporty-columns,
 .ebook-page:not(.layout-cover) .wellness-lead,
 .ebook-page:not(.layout-cover) .wellness-columns,
-.ebook-page:not(.layout-cover) .construct-text,
-.ebook-page:not(.layout-cover) .construct-columns,
 .ebook-page:not(.layout-cover) .nyt-deck,
 .ebook-page:not(.layout-cover) .nyt-columns,
 .ebook-page:not(.layout-cover) .nyt-sidebar-text,

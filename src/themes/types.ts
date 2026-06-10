@@ -8,7 +8,6 @@ export type ThemeId =
   | 'comic'
   | 'sporty'
   | 'wellness'
-  | 'construct'
   | 'newspaper'
   | 'bloodred'
   | 'minimalblack'

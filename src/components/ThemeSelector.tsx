@@ -150,19 +150,6 @@ const renderThemePreview = (
           </div>
         </div>
       );
-    case 'construct':
-      return (
-        <div className="celestial-theme-preview" style={previewStyle}>
-          <div className="mini-layout" style={fontBodyStyle}>
-            <div className="mini-construct-red">
-              <span style={{ ...fontHeaderStyle, fontSize: '0.75rem', letterSpacing: '1px' }}>SHAPES</span>
-            </div>
-            <div className="mini-construct-photo" />
-            <p style={{ ...fontBodyStyle, fontSize: '0.46rem', opacity: 0.9, margin: '4px 0 0', lineHeight: 1.2 }}>Avant-garde geometry & stark industrial contrast.</p>
-            <div className="mini-construct-stripe" />
-          </div>
-        </div>
-      );
     case 'newspaper':
       return (
         <div className="celestial-theme-preview" style={previewStyle}>

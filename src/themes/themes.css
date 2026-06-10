@@ -1,6 +1,6 @@
 /* ==========================================================================
    NEW E-BOOK THEMES — Wanderlust, Soft Pink, Comic, Sporty, Wellness,
-   Constructivist, Newspaper
+   Newspaper
    ========================================================================== */
 
 /* ── 5. WANDERLUST TRAVEL ── */
@@ -322,36 +322,7 @@
 .wellness-accent-1 .wellness-callout, .wellness-accent-1 .wellness-heading { color: var(--eb-accent); }
 .wellness-accent-1 .wellness-callout { background: #e91e63; color: #fff; }
 
-/* ── 10. CONSTRUCTIVIST ── */
-.theme-construct {
-  --eb-bg: #f5f2e9;
-  --eb-text: #121212;
-  --eb-accent: #a51c1c;
-  --eb-accent-light: rgba(165, 28, 28, 0.12);
-  --eb-border: #a51c1c;
-  --eb-font-header: 'Anton', sans-serif;
-  --eb-font-body: 'Montserrat', sans-serif;
-  --eb-img-radius: 0;
-  --eb-line-height: 1.5;
-}
-.theme-construct .ebook-page { padding: 0 !important; overflow: hidden; }
-.layout-construct-cover { display: flex; flex-direction: column; min-height: 360px; margin: -1rem -1.5rem; }
-.construct-cover-red { background: var(--eb-accent); padding: 1.5rem 1.25rem; flex: 0 0 auto; }
-.construct-cover-title { font-family: var(--eb-font-header); font-size: 2.5rem; color: #fff; text-transform: uppercase; line-height: 0.95; margin: 0; }
-.construct-cover-photo { flex: 1; }
-.construct-cover-img img { width: 100%; height: 100%; min-height: 180px; object-fit: cover; display: block; filter: grayscale(100%) contrast(1.2); }
-.layout-construct { display: grid; grid-template-columns: 1fr 28px; min-height: 100%; }
-.construct-red-bar { background: var(--eb-accent); padding: 0.5rem; display: flex; align-items: flex-start; }
-.construct-page-num { color: #fff; font-family: var(--eb-font-header); font-size: 1.5rem; writing-mode: vertical-rl; transform: rotate(180deg); }
-.construct-body { padding: 0.85rem 0.75rem; }
-.construct-title { font-family: var(--eb-font-header); font-size: 1.75rem; text-transform: uppercase; color: var(--eb-accent); margin-bottom: 0.5rem; line-height: 1; }
-.construct-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.5rem; }
-.construct-photo-img img { width: 100%; height: 110px; object-fit: cover; display: block; filter: grayscale(100%) contrast(1.15); border: 2px solid var(--eb-accent); }
-.construct-text { font-size: 0.72rem; line-height: 1.5; }
-.construct-columns { column-count: 2; column-gap: 0.65rem; font-size: 0.65rem; margin-bottom: 0.5rem; }
-.construct-panels { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.3rem; }
-.construct-panel-img img { width: 100%; height: 42px; object-fit: cover; display: block; filter: grayscale(100%); border: 1px solid var(--eb-accent); }
-.construct-side-text { writing-mode: vertical-rl; background: var(--eb-accent); color: #fff; font-family: var(--eb-font-header); font-size: 0.6rem; letter-spacing: 0.2em; display: flex; align-items: center; justify-content: center; padding: 0.25rem; }
+
 
 /* ── 11. NEWSPAPER ── */
 .theme-newspaper {
@@ -1698,7 +1669,7 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 3rem 2.5rem !important;
+  padding: 3rem 2.5rem 5rem !important;
   background-color: #ffffff !important;
   position: relative;
 }
@@ -1719,7 +1690,13 @@
   margin-bottom: 1.5rem;
 }
 
-.lavender-footer {
+.lavender-footer-band {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 50px;
+  background-color: var(--eb-bg);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -1730,8 +1707,8 @@
   opacity: 0.7;
   letter-spacing: 0.1em;
   border-top: 1px solid var(--eb-border);
-  padding-top: 0.75rem;
-  margin-top: 1.5rem;
+  padding: 0 2.5rem;
+  box-sizing: border-box;
 }
 
 /* Lavender Chapter Opener */
@@ -1756,7 +1733,7 @@
   font-family: var(--eb-font-header);
   font-size: 1.6rem;
   font-weight: 700;
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.25rem;
 }
 
 .lavender-opener-title {
@@ -1765,19 +1742,19 @@
   font-weight: 700;
   line-height: 1.25;
   color: var(--eb-accent) !important;
-  margin-bottom: 1rem;
+  margin-bottom: 1.75rem;
 }
 
 .lavender-opener-divider {
   width: 4rem;
   height: 2px;
   background-color: var(--eb-border);
-  margin-bottom: 1.5rem;
+  margin-bottom: 2.25rem;
 }
 
 .lavender-opener-desc {
-  font-size: 0.8rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
 }
 
@@ -1794,7 +1771,7 @@
   font-family: var(--eb-font-header) !important;
   font-size: 2rem !important;
   color: var(--eb-accent) !important;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
 }
 
 .lavender-split-columns {
@@ -1811,21 +1788,21 @@
 }
 
 .lavender-split-lead {
-  font-size: 0.8rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
   text-align: justify;
 }
 
 .lavender-split-body {
-  font-size: 0.8rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
   text-align: justify;
 }
 
 .lavender-split-img-container {
-  height: 320px; /* larger image (at least 40% width of split layout, container 320px high) */
+  height: 500px; /* larger image (at least 40% width of split layout, container 320px high) */
   overflow: hidden;
   border: 1px solid var(--eb-border);
   padding: 0.25rem;
@@ -1906,8 +1883,8 @@
 }
 
 .lavender-funnel-text {
-  font-size: 0.8rem;
-  line-height: 1.6;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
 }
 
@@ -1952,7 +1929,8 @@
 }
 
 .lavender-list-text {
-  font-size: 0.8rem;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
   font-weight: 500;
 }
@@ -1973,8 +1951,8 @@
 }
 
 .lavender-text-content {
-  font-size: 0.8rem;
-  line-height: 1.65;
+  font-size: 0.95rem;
+  line-height: 1.75;
   color: var(--eb-text);
   text-align: justify;
 }
