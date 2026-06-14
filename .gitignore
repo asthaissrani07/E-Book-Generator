@@ -15,6 +15,7 @@ dist-ssr
 # Next.js build output (never commit — may embed env secrets)
 .next
 out
+exports
 
 # Secrets — never commit API keys
 .env

@@ -6,7 +6,7 @@ const nextConfig = {
     VITE_POLLINATIONS_API_KEY: process.env.VITE_POLLINATIONS_API_KEY || '',
   },
   experimental: {
-    serverComponentsExternalPackages: ['pdfjs-dist', 'mjml'],
+    serverComponentsExternalPackages: ['pdfjs-dist', 'mjml', 'bullmq', 'ioredis', 'puppeteer'],
   },
   webpack: (config) => {
     config.resolve.alias.canvas = false;

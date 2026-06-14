@@ -3,7 +3,12 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { flushSync } from 'react-dom';
-import { PageLayout } from '@/app/components/PageLayout';
+import {
+  PrintPagesExport,
+  PRINT_EXPORT_ROOT_ID,
+  getPrintExportRootElement,
+} from '@/app/components/PrintPagesExport';
+import { getPageDimensions } from '@/lib/utils/printPageDimensions';
 import type { EbookSection } from './pdfParser';
 import type { ThemeId } from '../themes/types';
 
@@ -17,65 +22,7 @@ export interface PrintPdfExportOptions {
   dimensions?: 'letter' | 'a4' | 'legal';
 }
 
-const PRINT_ROOT_ID = 'ebook-print-export-root';
 const PRINT_STYLE_ID = 'ebook-print-export-styles';
-
-function getPageDimensions(dimensions: 'letter' | 'a4' | 'legal' = 'a4') {
-  if (dimensions === 'letter') return { w: 612, h: 792 };
-  if (dimensions === 'legal') return { w: 612, h: 1008 };
-  return { w: 794, h: 1123 };
-}
-
-function buildPrintPagesElement(
-  sections: EbookSection[],
-  bookTitle: string,
-  selectedTheme: ThemeId,
-  customThemeStyles: React.CSSProperties | undefined,
-  pageW: number,
-  pageH: number
-): React.ReactElement {
-  const noop = () => {};
-  const noopAsync = async () => {};
-
-  return (
-    <div
-      className={`print-container theme-${selectedTheme}`}
-      style={customThemeStyles}
-    >
-      {sections.map((section, idx) => (
-        <div
-          key={section.id || `page-${idx}`}
-          className="ebook-page-wrapper page-break"
-          style={{
-            width: `${pageW}px`,
-            height: `${pageH}px`,
-            pageBreakAfter: 'always',
-            breakAfter: 'page',
-            overflow: 'hidden',
-            position: 'relative',
-            boxSizing: 'border-box',
-          }}
-        >
-          <PageLayout
-            section={section}
-            pageIndex={idx + 1}
-            totalPages={sections.length}
-            bookTitle={bookTitle}
-            selectedTheme={selectedTheme}
-            onUpdateSection={noop}
-            onDeleteSection={noop}
-            onRegenerateImage={noopAsync}
-            isGeneratingImage={false}
-            isActive={true}
-            pdfExportMode={true}
-            drawMode={false}
-            drawColor="#000"
-          />
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function injectPrintStyles(pageW: number, pageH: number): void {
   if (document.getElementById(PRINT_STYLE_ID)) return;
@@ -83,7 +30,7 @@ function injectPrintStyles(pageW: number, pageH: number): void {
   const style = document.createElement('style');
   style.id = PRINT_STYLE_ID;
   style.textContent = `
-    #${PRINT_ROOT_ID} {
+    #${PRINT_EXPORT_ROOT_ID} {
       position: fixed;
       left: -9999px;
       top: 0;
@@ -99,27 +46,28 @@ function injectPrintStyles(pageW: number, pageH: number): void {
         width: ${pageW}px !important;
         background: white !important;
       }
-      body > *:not(#${PRINT_ROOT_ID}) {
-        display: none !important;
+      body * {
+        visibility: hidden !important;
       }
-      #${PRINT_ROOT_ID} {
-        display: block !important;
-        position: static !important;
-        left: auto !important;
-        top: auto !important;
-        width: ${pageW}px !important;
+      #${PRINT_EXPORT_ROOT_ID},
+      #${PRINT_EXPORT_ROOT_ID} * {
         visibility: visible !important;
-        pointer-events: auto !important;
-        z-index: auto !important;
       }
-      #${PRINT_ROOT_ID} .ebook-page-wrapper {
+      #${PRINT_EXPORT_ROOT_ID} {
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: ${pageW}px !important;
+        pointer-events: auto !important;
+      }
+      #${PRINT_EXPORT_ROOT_ID} .ebook-page-wrapper {
         page-break-after: always !important;
         break-after: page !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
       }
-      #${PRINT_ROOT_ID} .ebook-page,
-      #${PRINT_ROOT_ID} .pdf-export-page {
+      #${PRINT_EXPORT_ROOT_ID} .ebook-page,
+      #${PRINT_EXPORT_ROOT_ID} .pdf-export-page {
         width: ${pageW}px !important;
         min-height: ${pageH}px !important;
         height: ${pageH}px !important;
@@ -171,9 +119,12 @@ async function waitForImages(container: HTMLElement, timeoutMs = 10_000): Promis
   );
 }
 
-function cleanupPrintRoot(root: ReturnType<typeof createRoot> | null): void {
+function cleanupPrintRoot(
+  root: ReturnType<typeof createRoot> | null,
+  mountPoint: HTMLElement | null
+): void {
   root?.unmount();
-  document.getElementById(PRINT_ROOT_ID)?.remove();
+  mountPoint?.remove();
   removePrintStyles();
 }
 
@@ -203,31 +154,36 @@ export async function exportPrintPdf(options: PrintPdfExportOptions): Promise<vo
   injectPrintStyles(pageW, pageH);
 
   const mountPoint = document.createElement('div');
-  mountPoint.id = PRINT_ROOT_ID;
   document.body.appendChild(mountPoint);
 
   const root = createRoot(mountPoint);
-  const pagesElement = buildPrintPagesElement(
-    sections,
-    bookTitle,
-    selectedTheme,
-    customThemeStyles,
-    pageW,
-    pageH
+  const pagesElement = (
+    <PrintPagesExport
+      sections={sections}
+      bookTitle={bookTitle}
+      selectedTheme={selectedTheme}
+      customThemeStyles={customThemeStyles}
+      dimensions={dimensions}
+      rootId={PRINT_EXPORT_ROOT_ID}
+    />
   );
 
   flushSync(() => {
     root.render(pagesElement);
   });
 
-  // Let React effects (image src resolution) run before capture
+  // Let React effects (image src resolution) run before print
   await new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
-  await waitForImages(mountPoint);
+  onProgress?.(Math.min(1, total), total);
+
+  const imageTimeout = total > 50 ? 20_000 : total > 20 ? 15_000 : 10_000;
+  const exportRoot = getPrintExportRootElement() ?? mountPoint;
+  await waitForImages(exportRoot, imageTimeout);
   await waitForFonts();
-  await new Promise<void>((resolve) => setTimeout(resolve, 400));
+  await new Promise<void>((resolve) => setTimeout(resolve, total > 30 ? 1200 : 400));
 
   if (signal?.aborted) {
-    cleanupPrintRoot(root);
+    cleanupPrintRoot(root, mountPoint);
     throw new Error('Export cancelled.');
   }
 
@@ -236,7 +192,7 @@ export async function exportPrintPdf(options: PrintPdfExportOptions): Promise<vo
   // Print from the same document so all theme CSS stays applied (no about:blank)
   await new Promise<void>((resolve, reject) => {
     const finish = () => {
-      cleanupPrintRoot(root);
+      cleanupPrintRoot(root, mountPoint);
       resolve();
     };
 
@@ -250,7 +206,7 @@ export async function exportPrintPdf(options: PrintPdfExportOptions): Promise<vo
     setTimeout(() => {
       if (signal?.aborted) {
         window.removeEventListener('afterprint', onAfterPrint);
-        cleanupPrintRoot(root);
+        cleanupPrintRoot(root, mountPoint);
         reject(new Error('Export cancelled.'));
         return;
       }
@@ -258,11 +214,11 @@ export async function exportPrintPdf(options: PrintPdfExportOptions): Promise<vo
       window.print();
       // Fallback cleanup if afterprint never fires (some browsers)
       setTimeout(() => {
-        if (document.getElementById(PRINT_ROOT_ID)) {
+        if (document.getElementById(PRINT_EXPORT_ROOT_ID)) {
           window.removeEventListener('afterprint', onAfterPrint);
           finish();
         }
-      }, 60_000);
-    }, 300);
+      }, 120_000);
+    }, total > 30 ? 800 : 300);
   });
 }

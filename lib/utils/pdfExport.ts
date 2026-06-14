@@ -9,6 +9,7 @@ import {
   getPlaceholderImageUrl,
   getStockFallbackUrl,
   getThemeImageSlotsForPage,
+  resolveImageUrl,
 } from './imageHelper';
 
 /** Threshold above which preview renders one page at a time (avoids browser freeze). */
@@ -275,6 +276,38 @@ function collectExportImageSlots(
   });
 
   return slots;
+}
+
+/** Preload the same AI/stock images the editor preview uses (for BullMQ preview-accurate export). */
+export async function preloadPreviewImagesForExport(
+  sections: EbookSection[],
+  bookTitle: string,
+  themeId: ThemeId,
+  onPreloadProgress?: (loaded: number, total: number) => void,
+  signal?: AbortSignal
+): Promise<void> {
+  const slots = collectExportImageSlots(sections, bookTitle, themeId);
+  const batchSize = 6;
+  let loaded = 0;
+
+  for (let i = 0; i < slots.length; i += batchSize) {
+    if (signal?.aborted) {
+      throw new Error('Export cancelled.');
+    }
+    await Promise.all(
+      slots.slice(i, i + batchSize).map(async ({ prompt, seed }) => {
+        if (signal?.aborted) return;
+        try {
+          await resolveImageUrl(prompt, seed);
+        } catch {
+          /* ResolvedImage falls back to placeholder */
+        }
+        loaded++;
+        onPreloadProgress?.(loaded, slots.length);
+      })
+    );
+    await yieldToBrowser(80);
+  }
 }
 
 /** Convert all export images to embedded data URLs before capture. */

@@ -7,16 +7,25 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "worker": "tsx workers/pdf-export-worker.ts",
+    "kafka:consumer": "tsx workers/kafka-blog-consumer.ts",
+    "kafka:create-topics": "tsx scripts/kafka-create-topics.ts",
+    "kafka:test-publish": "tsx scripts/publish-test-blog-event.ts",
+    "install:chrome": "puppeteer browsers install chrome"
   },
   "dependencies": {
     "@react-pdf/renderer": "^4.5.1",
+    "bullmq": "^5.78.0",
     "html2canvas": "^1.4.1",
+    "ioredis": "^5.11.1",
     "jspdf": "^4.2.1",
+    "kafkajs": "^2.2.4",
     "lucide-react": "^1.17.0",
     "mjml": "^4.15.3",
     "next": "^14.2.15",
     "pdfjs-dist": "^4.8.86",
+    "puppeteer": "^22.15.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
@@ -28,6 +37,7 @@
     "autoprefixer": "^10.4.16",
     "postcss": "^8.4.31",
     "tailwindcss": "^3.4.1",
+    "tsx": "^4.22.4",
     "typescript": "~5.4.5"
   }
 }

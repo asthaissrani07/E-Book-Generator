@@ -27,6 +27,11 @@ import {
   preloadExportImages,
 } from '@/lib/utils/pdfExport';
 import { exportPrintPdf } from '@/lib/utils/printPdfExport';
+import {
+  enqueueAndWaitForPdf,
+  shouldUseQueueExport,
+  triggerPdfDownload,
+} from '@/lib/utils/queuePdfExport';
 
 function App() {
   const [appView, setAppView] = useState<'landing' | 'studio'>('landing');
@@ -177,9 +182,9 @@ function App() {
 
   const [isStyling, setIsStyling] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
-  const [isPrintReady, setIsPrintReady] = useState(false);
   const [exportProgress, setExportProgress] = useState({ current: 0, total: 0 });
   const [exportStatus, setExportStatus] = useState('');
+  const [exportMode, setExportMode] = useState<'print' | 'queue'>('print');
   const [activePageIndex, setActivePageIndex] = useState(0);
   const [isGeneratingImageMap, setIsGeneratingImageMap] = useState<{ [key: number]: boolean }>({});
   const [activeMobileView, setActiveMobileView] = useState<'controls' | 'preview'>('controls');
@@ -208,10 +213,17 @@ function App() {
       return;
     }
 
-    if (formattedPages.length > 30) {
+    const useQueue = shouldUseQueueExport(formattedPages.length);
+
+    if (useQueue) {
+      const proceed = window.confirm(
+        `Exporting ${formattedPages.length} pages runs in the background (Redis + worker). The PDF will match your preview and download automatically when ready. Keep this tab open. Continue?`
+      );
+      if (!proceed) return;
+    } else if (formattedPages.length > 15) {
       const minutes = estimateExportMinutes(formattedPages.length);
       const proceed = window.confirm(
-        `Exporting ${formattedPages.length} pages in high quality usually takes about ${minutes} minutes. The PDF will match your preview with sharp text and images. Keep this tab open. Continue?`
+        `Exporting ${formattedPages.length} pages uses your browser print dialog (about ${minutes} min). Choose "Save as PDF" or "Microsoft Print to PDF" to download. Continue?`
       );
       if (!proceed) return;
     }
@@ -219,12 +231,47 @@ function App() {
     const abort = new AbortController();
     exportAbortRef.current = abort;
     setIsExporting(true);
-    setIsPrintReady(false);
     setExportProgress({ current: 0, total: formattedPages.length });
-    setExportStatus('Preparing images…');
+    setExportStatus(useQueue ? 'Queuing background export…' : 'Preparing images…');
+    setExportMode(useQueue ? 'queue' : 'print');
     document.body.classList.add('pdf-exporting');
 
     try {
+      if (useQueue) {
+        const customThemeStylesRecord = Object.fromEntries(
+          Object.entries(customThemeStyles).map(([k, v]) => [k, String(v)])
+        );
+
+        const result = await enqueueAndWaitForPdf({
+          sections: formattedPages,
+          bookTitle,
+          selectedTheme,
+          customThemeStyles: customThemeStylesRecord,
+          dimensions,
+          onProgress: (progress, status) => {
+            setExportProgress({
+              current: Math.round((progress / 100) * formattedPages.length),
+              total: formattedPages.length,
+            });
+            setExportStatus(
+              status === 'queued'
+                ? 'Queued — waiting for worker…'
+                : status === 'active'
+                  ? 'Rendering preview pages…'
+                  : status === 'completed'
+                    ? 'Downloading PDF…'
+                    : status
+            );
+          },
+          signal: abort.signal,
+        });
+
+        if (result.downloadUrl && result.filename) {
+          triggerPdfDownload(result.downloadUrl, result.filename);
+        }
+        return;
+      }
+
       await preloadExportImages(formattedPages, bookTitle, selectedTheme, (loaded, total) => {
         setExportStatus(`Preparing images… (${loaded}/${total})`);
       }, abort.signal);
@@ -233,28 +280,7 @@ function App() {
         throw new Error('Export cancelled.');
       }
 
-      setExportStatus('');
-      setIsPrintReady(true);
-    } catch (err) {
-      console.error('Image preloading failed: ', err);
-      const message = err instanceof Error ? err.message : String(err);
-      if (message.includes('cancelled') || abort.signal.aborted) {
-        alert('PDF export cancelled.');
-      } else {
-        alert(`Could not preload images (${message}). Please try again.`);
-      }
-      setIsExporting(false);
-      setIsPrintReady(false);
-      setExportProgress({ current: 0, total: 0 });
-      setExportStatus('');
-      document.body.classList.remove('pdf-exporting');
-    }
-  };
-
-  const handleTriggerPrint = async () => {
-    try {
-      setExportStatus('Opening print preview...');
-      setIsPrintReady(false); // hide button once clicked
+      setExportStatus('Rendering preview pages for print…');
 
       await exportPrintPdf({
         sections: formattedPages,
@@ -262,19 +288,24 @@ function App() {
         selectedTheme,
         customThemeStyles,
         onProgress: (current, total) => setExportProgress({ current, total }),
-        signal: exportAbortRef.current?.signal,
+        signal: abort.signal,
         dimensions,
       });
     } catch (err) {
-      console.error('PDF printing failed: ', err);
+      console.error('PDF export failed: ', err);
       const message = err instanceof Error ? err.message : String(err);
-      alert(`Could not open print preview: ${message}`);
+      if (message.includes('cancelled') || abort.signal.aborted) {
+        alert('PDF export cancelled.');
+      } else {
+        alert(`Could not export PDF: ${message}`);
+      }
     } finally {
       exportAbortRef.current = null;
       document.body.classList.remove('pdf-exporting');
       setIsExporting(false);
       setExportProgress({ current: 0, total: 0 });
       setExportStatus('');
+      setExportMode('print');
     }
   };
 
@@ -747,9 +778,8 @@ function App() {
           current={exportProgress.current}
           total={exportProgress.total}
           statusMessage={exportStatus || undefined}
+          mode={exportMode}
           onCancel={handleCancelExport}
-          isPrintReady={isPrintReady}
-          onPrint={handleTriggerPrint}
         />
       )}
 
